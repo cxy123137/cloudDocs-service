@@ -1,0 +1,13 @@
+# 依赖目录
+node_modules/
+
+# 构建产物
+dist/
+build/
+
+# 系统文件
+Thumbs.db
+
+# IDE配置
+.vscode/
+.idea/

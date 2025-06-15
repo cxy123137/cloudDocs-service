@@ -15,5 +15,5 @@ app.use('/login', loginRouter);
 
 // 启动服务器
 app.listen(port, () => {
-  console.log(`Express app listening at http://localhost:${port}`);
+  console.log(`服务已启动：http://localhost:${port}`);
 });

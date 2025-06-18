@@ -1,14 +1,6 @@
 import express from 'express';
 import { addKnowledgeBase, getKnowledgeBase, updateKnowledgeBase, deleteKnowledgeBase } from '../service/知识库.js';
-import app from '../app.js';
 const knowledgeBaseRouter = express.Router();
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*'); // 上线后只允许配置为前端ip端口
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
 
 // 创建知识库
 knowledgeBaseRouter.post('/addKnowledgeBase', async (req, res) => {

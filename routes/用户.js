@@ -21,7 +21,7 @@ userRouter.post('/addUser', async (req, res) => {
   try {
     // 调用serv层方法，创建新用户
     const result = await addUser(req);
-    res.status(201).json({code: 201, message: "用户创建成功", data: result.ops[0]});
+    res.status(201).json({code: 201, message: "用户创建成功", data: result.insertedId});
   } catch (err) {
     res.status(500).json({code: 500, message: "服务器错误，请稍后再试", error: err.message});
   }

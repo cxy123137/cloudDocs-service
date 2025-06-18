@@ -7,7 +7,7 @@ export async function addUser(req) {
   const newUser = {
     _id: new ObjectId(), // 引入mongodb库来生成ObjectId
     Username: req.body.Username,
-    friends: (req.body.friends || []).map((friend) => new ObjectId(friend)) || [], // 默认为空数组
+    friends: (req.body.friends || []).map((friend) => new ObjectId(friend)), // 默认为空数组
     password: req.body.password, // 密码需要加密
     valid: req.body.valid || 1, // 默认为1，表示有效
     createTime: new Date(),

@@ -1,26 +1,64 @@
 import express from 'express';
+import { connectToDatabase } from '../db.js';
+
 const documentsrouter = express.Router();
+const { db } = connectToDatabase();
 
-documentsrouter.get('/select', (req, res) => {
-  res.send('Hello World!');
-})
+// 查询文档
+documentsrouter.get('/select', async (req, res) => {
+  try {
+    const docs = await db.collection('docs').find({}).toArray();
+    res.status(200).json(docs);
+  } catch (error) {
+    res.status(500).send(error.toString());
+  }
+});
 
-documentsrouter.post('/insert', (req, res) => {
-  res.send('POST request received');
-})
+// 插入文档
+documentsrouter.post('/insert', async (req, res) => {
+  try {
+    
+    res.status(201).json({ message: 'Document inserted successfully', insertedId: result.insertedId });
+  } catch (error) {
+    res.status(500).send(error.toString());
+  }
+});
 
-documentsrouter.delete('/delete/:id', (req, res) => {
-  res.send('DELETE request received');
-})
+// 删除文档
+documentsrouter.delete('/delete/:id', async (req, res) => {
+  try {
+    const result = await db.collection('docs').deleteOne({ _id: req.params.id });
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: 'Document deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Document not found' });
+    }
+  } catch (error) {
+    res.status(500).send(error.toString());
+  }
+});
 
-documentsrouter.put('/put/:id/:name', (req, res) => {
-  // 路径参数
-  const id = req.params.id;
-  // 请求体
-  const age = req.body.age;
-  // 查询参数
-  const name = req.query.name;
-  res.status(200).send(`PUT request received for id: ${id}`);
-})
+// 更新文档
+documentsrouter.put('/put/:id', async (req, res) => {
+  try {
+    const updateDoc = {
+      $set: {
+        baseId: req.body.baseId,
+        content: req.body.content || {},
+        version: req.body.version,
+        snapshotAtVersion: req.body.snapshotAtVersion,
+        snapshot: req.body.snapshot
+      }
+    };
+    const result = await db.collection('docs').updateOne({ _id: req.params.id }, updateDoc);
+    if (result.matchedCount === 1) {
+      res.status(200).json({ message: 'Document updated successfully' });
+    } else {
+      res.status(404).json({ message: 'Document not found' });
+    }
+  } catch (error) {
+    res.status(500).send(error.toString());
+  }
+});
 
-export { documentsrouter }
+export { documentsrouter };

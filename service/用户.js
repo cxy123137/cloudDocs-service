@@ -1,8 +1,9 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
 
+const { db } = await connectToDatabase();
+
 export async function addUser(req) {
-  const { db } = await connectToDatabase();
   const newUser = {
     _id: new ObjectId(), // 引入mongodb库来生成ObjectId
     Username: req.body.Username,
@@ -17,19 +18,17 @@ export async function addUser(req) {
 }
 
 export async function getUser(req) {
-  const { db } = await connectToDatabase();
   let users;
   if (req.query.id) {
-    users = await db.collection('users').findOne({_id: new ObjectId(req.query.id)});
+    users = await db.collection('users').findOne({_id: new ObjectId(req.query.id), valid: 1});
   } else {
-    users = await db.collection('users').find().toArray();
+    users = await db.collection('users').find({valid: 1}).toArray();
   }
   return users;
 }
 
 // 修改用户信息
 export async function updateUser(req) {
-  const { db } = await connectToDatabase();
   const updateFields = {
     $set: {
       Username: req.body.Username,
@@ -43,9 +42,8 @@ export async function updateUser(req) {
   return result;
 }
 
-// 记得改成假删
+// 记得改成假删，valid为0
 export async function deleteUser(req) {
-  const { db } = await connectToDatabase();
   const result = await db.collection('users').deleteOne({_id: new ObjectId(req.params.id)});
   return result;
 }

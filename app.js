@@ -1,8 +1,5 @@
 import express from 'express';
-import { knowledgeBaseRouter } from './routes/知识库.js';
-import { documentsrouter } from './routes/文档.js';
-import { userRouter } from './routes/用户.js';
-import { loginRouter } from './routes/登录校验.js';
+import router from './routes/index.js'; // 引入路由模块
 const app = express();
 const port = 8000;
 
@@ -16,10 +13,7 @@ app.use((req, res, next) => {
 
 // 请求json处理拦截器
 app.use(express.json());
-app.use('/knowledgeBase', knowledgeBaseRouter);
-app.use('/documents', documentsrouter);
-app.use('/user', userRouter);
-app.use('/login', loginRouter);
+router(app);
 
 // 启动服务器
 app.listen(port, () => {

@@ -4,7 +4,6 @@ const knowledgeBaseRouter = express.Router();
 
 // 创建知识库
 knowledgeBaseRouter.post('/addKnowledgeBase', async (req, res) => {
-  console.log('req.body:', req.body);
   try {
     const result = await addKnowledgeBase(req);
     res.status(201).json({ code: 201, message: "知识库创建成功", data: result.insertedId });

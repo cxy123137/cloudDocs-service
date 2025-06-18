@@ -15,7 +15,6 @@ export async function addKnowledgeBase(req) {
     createTime: new Date(),
     updateTime: new Date(),
   };
-  console.log(ownerId);
   const result = await db.collection('knowledgeBases').insertOne(knowledgeBaseData);
   return result;
 }

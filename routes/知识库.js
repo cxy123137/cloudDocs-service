@@ -1,5 +1,6 @@
 import express from 'express';
 import { addKnowledgeBase, getKnowledgeBase, updateKnowledgeBase, deleteKnowledgeBase } from '../service/知识库.js';
+import app from '../app.js';
 const knowledgeBaseRouter = express.Router();
 
 app.use((req, res, next) => {

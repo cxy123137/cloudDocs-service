@@ -7,9 +7,9 @@ const port = 8000;
 
 // 请求头跨域配置
 app.use(cors({
-  origin: '*', // 生产环境建议指定前端域名
-  methods: 'GET, POST, PUT, DELETE',
-  allowedHeaders: 'Content-Type, Authorization',
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // 请求json处理拦截器

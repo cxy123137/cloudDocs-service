@@ -3,6 +3,8 @@ import router from './routes/index.js'; // 引入路由模块
 const app = express();
 const port = 8000;
 
+import { userRouter } from './routes/用户.js';
+
 // 请求头跨域配置
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*'); // 上线后只允许配置为前端ip端口
@@ -13,7 +15,8 @@ app.use((req, res, next) => {
 
 // 请求json处理拦截器
 app.use(express.json());
-router(app);
+app.use('/user', userRouter);
+// router(app);
 
 // 启动服务器
 app.listen(port, () => {

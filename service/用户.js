@@ -6,8 +6,8 @@ const { db } = await connectToDatabase();
 export async function addUser(req) {
   const newUser = {
     _id: new ObjectId(), // 引入mongodb库来生成ObjectId
-    Username: req.body.Username,
-    friends: (req.body.friends || []).map((friend) => new ObjectId(friend)), // 默认为空数组
+    Username: req.body.username,
+    friends: req.body.friends ? [] : req.body.friends.map((friend) => new ObjectId(friend)), // 默认为空数组
     password: req.body.password, // 密码需要加密
     valid: req.body.valid || 1, // 默认为1，表示有效
     createTime: new Date(),
@@ -31,14 +31,14 @@ export async function getUser(req) {
 export async function updateUser(req) {
   const updateFields = {
     $set: {
-      Username: req.body.Username,
-      friends: (req.body.friends || []).map((friend) => new ObjectId(friend)),
+      Username: req.body.username,
+      friends: req.body.friends ? undefined : req.body.friends.map((friend) => new ObjectId(friend)),
       password: req.body.password, // 注意：在真实应用中，密码不应该明文存储
       valid: req.body.valid, // 默认为1，表示有效
       updateTime: new Date(),
     },
   };
-  const result = await db.collection('users').updateOne({_id: new ObjectId(req.params.id)}, updateFields);
+  const result = await db.collection('users').updateOne({_id: new ObjectId(req.params.id), valid: 1}, updateFields);
   return result;
 }
 

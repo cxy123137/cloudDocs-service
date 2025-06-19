@@ -16,19 +16,19 @@ app.use(cors({
 
 // 全局拦截请求，必须登录
 app.use((req, res, next) => {
-  if (req.path === '/login/login' || req.path === '/public') {
+  if (req.path === '/login/login' || req.path === '/login/register' || req.path === '/public') {
     return next(); // 跳过拦截
   }
 
   // 获取 Authorization 头
   const token = req.headers.authorization;
-  if (!authHeader) {
+  if (!token) {
     return res.status(401).send('未携带token，请登录');
   }
 
   // 校验 token
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    jwt.verify(token, process.env.JWT_SECRET_KEY);
     next();
   } catch (err) {
     return res.status(401).send('token 无效或已过期');

@@ -13,7 +13,7 @@ const SECRET_KEY = process.env.JWT_SECRET_KEY;
 loginRouter.use(setContext);
 
 // 登录接口（自动注册，验证后存储用户信息到上下文）
-loginRouter.post('/login', async (req, res) => {
+loginRouter.get('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const user = await db.collection('users').findOne({ username });

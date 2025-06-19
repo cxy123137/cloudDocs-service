@@ -63,4 +63,12 @@ userRouter.delete('/destroyUser/:id', async (req, res) => {
   }
 });
 
+// 添加好友
+// 删除好友
+// 获取好友列表
+// 获取好友申请列表
+// 同意好友申请
+// 拒绝好友申请
+
+
 export { userRouter }

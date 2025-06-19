@@ -6,7 +6,7 @@ import { addUser } from '../service/用户.js';
 import 'dotenv/config';
 
 const loginRouter = express.Router();
-const { db } = connectToDatabase();
+const { db } = await connectToDatabase();
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 // 中间件，AsyncLocalStorage需要提前初始化run()一块区域
@@ -37,7 +37,7 @@ loginRouter.get('/login', async (req, res) => {
     res.json({ token });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: '服务器错误' });
+    res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });
   }
 });
 

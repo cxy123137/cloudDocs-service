@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import router from './routes/index.js'; // 引入路由模块
+import jwt from 'jsonwebtoken';
+import 'dotenv/config';
 const app = express();
 const port = 8000;
 
@@ -17,11 +19,20 @@ app.use((req, res, next) => {
   if (req.path === '/login/login' || req.path === '/public') {
     return next(); // 跳过拦截
   }
-  // 其他请求需要验证
-  if (!req.user) {
-    return res.status(401).send('验证过期，请登录');
+
+  // 获取 Authorization 头
+  const token = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send('未携带token，请登录');
   }
-  next();
+
+  // 校验 token
+  try {
+    const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    next();
+  } catch (err) {
+    return res.status(401).send('token 无效或已过期');
+  }
 });
 
 // 请求json处理拦截器

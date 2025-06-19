@@ -14,14 +14,19 @@ const SECRET_KEY = process.env.JWT_SECRET_KEY;
 loginRouter.use(setContext);
 
 // 登录接口
-loginRouter.get('/login', async (req, res) => {
-  const { username, password } = req.query;
+loginRouter.post('/login', async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
   try {
     let user = await db.collection('users').findOne({username: username});
 
     if (!user) {
       return res.status(401).json({ error: '用户不存在' });
     }
+    
+    console.log(password);
+    console.log(user.password);
+
     
     if (password !== user.password) {
       return res.status(401).json({ error: '密码错误' });
@@ -57,25 +62,8 @@ loginRouter.post('/register', async (req, res) => {
     }
 
     // 创建新用户
-    const newUser = await addUser(username, password);
-    console.log(newUser);
-    
-    const userId = newUser.insertedId;
-    console.log(userId);
-    
-    // 获取默认知识库id
-    const baseId = await getDefaultKnowledgeBaseIdByUserId(userId);
-
-    // 存储用户信息到上下文
-    let context = getContext();
-    context.user = { 
-      _id: userId, 
-      username: username 
-    };
-
-    // 生成 JWT
-    const token = jwt.sign({ userId: userId }, SECRET_KEY, { expiresIn: '1h' });
-    res.status(200).json({ code: 200, message: "注册成功", token: token, defaultKnowledgeBaseId: baseId });
+    await addUser(username, password);
+    res.status(200).json({ code: 200, message: "注册成功" });
     } catch (err) {
     console.error(err);
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });

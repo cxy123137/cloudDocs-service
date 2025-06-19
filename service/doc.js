@@ -10,7 +10,7 @@ async function performDatabaseOperation(operation) {
     const result = await operation;
     return result;
   } catch (error) {
-    console.error('Database operation failed:', error);
+    console.error('数据库操作错误：', error);
     throw error;
   }
 }

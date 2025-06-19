@@ -10,7 +10,18 @@ documentsrouter.get('/getDoc', async (req, res) => {
     const docs = await getDocument({ id });
     res.status(200).json(docs);
   } catch (error) {
-    res.status(500).send(error.toString());
+    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: error.message });
+  }
+});
+
+// 根据 baseId 查询文档列表
+documentsrouter.get('/getDocByBaseId', async (req, res) => {
+  try {
+    const { baseId } = req.query;
+    const docs = await getDocument({ baseId });
+    res.status(200).json({ code: 200, message: '查询成功', data: docs });
+  } catch (err) {
+    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: err.message });
   }
 });
 
@@ -30,7 +41,7 @@ documentsrouter.post('/addDoc', async (req, res) => {
     });
     res.status(201).json({ code: 201, message: '文档新建成功', insertedId: result.insertedId });
   } catch (error) {
-    res.status(500).send(error.toString());
+    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: error.message });
   }
 });
 

@@ -35,7 +35,7 @@ documentsrouter.post('/addDoc', async (req, res) => {
       snapshot,
       valid,
     });
-    res.status(201).json({ message: 'Document inserted successfully', insertedId: result.insertedId });
+    res.status(201).json({ code: 201, message: '文档新建成功', insertedId: result.insertedId });
   } catch (error) {
     res.status(500).send(error.toString());
   }

@@ -24,10 +24,6 @@ loginRouter.post('/login', async (req, res) => {
       return res.status(401).json({ error: '用户不存在' });
     }
     
-    console.log(password);
-    console.log(user.password);
-
-    
     if (password !== user.password) {
       return res.status(401).json({ error: '密码错误' });
     }

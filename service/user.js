@@ -59,3 +59,10 @@ export async function deleteUser(id) {
   const result = await db.collection('users').deleteOne({ _id: new ObjectId(id) });
   return result;
 }
+
+// 获取用户好友
+// 获取好友列表
+// 获取好友申请列表
+// 添加好友申请
+// 处理好友申请
+// 删除好友

@@ -38,19 +38,20 @@ documentsrouter.post('/addDoc', async (req, res) => {
 documentsrouter.put('/put/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { content, valid } = req.body;
+    const { title, content, valid } = req.body;
     const result = await updateDocument({
       id,
+      title,
       content,
       valid,
     });
     if (result.matchedCount === 1) {
-      res.status(200).json({ message: 'Document updated successfully' });
+      res.status(200).json({ code: 200, message: '文档更新成功' });
     } else {
-      res.status(404).json({ message: 'Document not found' });
+      res.status(404).json({ code: 404, message: '文档不存在' });
     }
-  } catch (error) {
-    res.status(500).send(error.toString());
+  } catch (err) {
+    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: err.message });
   }
 });
 
@@ -64,8 +65,8 @@ documentsrouter.delete('/delete/:id', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Document not found' });
     }
-  } catch (error) {
-    res.status(500).send(error.toString());
+  } catch (err) {
+    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: err.message });
   }
 });
 

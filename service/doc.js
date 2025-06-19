@@ -4,14 +4,6 @@ import { ObjectId } from 'mongodb';
 // 连接到数据库
 const { db } = await connectToDatabase();
 
-// 生成新的 ObjectId
-function generateObjectId(id) {
-  if (id) {
-    return new ObjectId(id);
-  }
-  return new ObjectId();
-}
-
 // 通用的数据库操作辅助函数
 async function performDatabaseOperation(operation) {
   try {
@@ -27,9 +19,9 @@ async function performDatabaseOperation(operation) {
 export async function addDocument(title = "未命名文档", baseId, content = {}, 
   version = 0, snapshotAtVersion = null, snapshot = '', valid = 1,) {
   const newDoc = {
-    _id: generateObjectId(),
+    _id: new ObjectId(),
     title,
-    baseId: generateObjectId(baseId),
+    baseId: new ObjectId(baseId),
     content,
     version,
     snapshotAtVersion,
@@ -42,11 +34,11 @@ export async function addDocument(title = "未命名文档", baseId, content = {
   return result;
 }
 
-// 查询文档
+// 查询文档，可以查询一个或者全部
 export async function getDocument({ id } = {}) {
   if (id) {
     return await performDatabaseOperation(
-      db.collection('docs').findOne({ _id: generateObjectId(id), valid: 1 })
+      db.collection('docs').findOne({ _id: new ObjectId(id), valid: 1 })
     );
   } else {
     return await performDatabaseOperation(
@@ -55,20 +47,24 @@ export async function getDocument({ id } = {}) {
   }
 }
 
+// 根据 baseId 查询文档
+export async function getDocumentByBaseId(baseId) {
+  return await performDatabaseOperation(
+    db.collection('docs').find({ baseId: new ObjectId(baseId), valid: 1 }).toArray()
+  );
+}
+
 // 更新文档
-export async function updateDocument({
-  id,
-  content = {},
-  valid = 1,
-}) {
+export async function updateDocument(id, title, content, valid) {
   const documentData = {
+    title,
     content,
     valid,
     updateTime: new Date(),
   };
   const result = await performDatabaseOperation(
     db.collection('docs').updateOne(
-      { _id: generateObjectId(id), valid: 1 },
+      { _id: new ObjectId(id), valid: 1 },
       { $set: documentData }
     )
   );
@@ -78,7 +74,7 @@ export async function updateDocument({
 // 删除文档
 export async function deleteDocument(id) {
   const result = await performDatabaseOperation(
-    db.collection('docs').deleteOne({ _id: generateObjectId(id), valid: 1 })
+    db.collection('docs').deleteOne({ _id: new ObjectId(id), valid: 1 })
   );
   return result;
 }

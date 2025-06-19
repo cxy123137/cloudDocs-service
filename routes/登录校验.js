@@ -1,26 +1,45 @@
 import express from 'express';
+import { connectToDatabase } from '../db.js';
+import jwt from 'jsonwebtoken';
+import { setContext, getContext } from '../context.js';
+import { addUser } from '../service/用户.js';
+import 'dotenv/config';
+
 const loginRouter = express.Router();
+const { db } = connectToDatabase();
+const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
-loginRouter.get('/select', (req, res) => {
-  res.send('Hello World!');
-})
+// 中间件，AsyncLocalStorage需要提前初始化run()一块区域
+loginRouter.use(setContext);
 
-loginRouter.post('/insert', (req, res) => {
-  res.send('POST request received');
-})
+// 登录接口（自动注册，验证后存储用户信息到上下文）
+loginRouter.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await db.collection('users').findOne({ username });
 
-loginRouter.delete('/delete/:id', (req, res) => {
-  res.send('DELETE request received');
-})
+    if (!user) {
+      // 自动注册
+      await addUser(req);
+    } else if (password !== user.password) {
+      return res.status(401).json({ error: '密码错误' });
+    }
 
-loginRouter.put('/put/:id/:name', (req, res) => {
-  // 路径参数
-  const id = req.params.id;
-  // 请求体
-  const age = req.body.age;
-  // 查询参数
-  const name = req.query.name;
-  res.status(200).send(`PUT request received for id: ${id}`);
-})
+    // 存储用户信息到上下文
+    const context = getContext();
+    context.user = { 
+      id: user._id, 
+      username: user.username 
+    };
+
+    // 生成 JWT
+    const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1h' });
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
 
 export { loginRouter }
+

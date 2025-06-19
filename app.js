@@ -12,6 +12,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// 全局拦截请求，必须登录
+app.use((req, res, next) => {
+  if (req.path === '/login/login' || req.path === '/public') {
+    return next(); // 跳过拦截
+  }
+  // 其他请求需要验证
+  if (!req.user) {
+    return res.status(401).send('验证过期，请登录');
+  }
+  next();
+});
+
 // 请求json处理拦截器
 app.use(express.json());
 router(app);

@@ -6,7 +6,7 @@ import { loginRouter } from '../routes/login.js';
 
 export default function (app) {
   app.use('/knowledgeBase', knowledgeBaseRouter);
-  app.use('/documents', documentsrouter);
+  app.use('/document', documentsrouter);
   app.use('/user', userRouter);
   app.use('/login', loginRouter);
 }

@@ -17,14 +17,7 @@ documentsrouter.get('/getDoc', async (req, res) => {
 // 新建文档
 documentsrouter.post('/addDoc', async (req, res) => {
   try {
-    const {
-      title,
-      baseId,
-      content,
-      version,
-      snapshotAtVersion,
-      snapshot,
-      valid,
+    const { title, baseId, content, version, snapshotAtVersion, snapshot, valid,
     } = req.body;
     const result = await addDocument({
       title,

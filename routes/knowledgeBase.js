@@ -29,7 +29,7 @@ knowledgeBaseRouter.get('/getKnowledgeBases', async (req, res) => {
   try {
     const { userId } = req.query;
     const knowledgeBases = await getKnowledgeBaseByUserId(userId);
-    res.status(200).json(knowledgeBases);
+    res.status(200).json({ code: 200, message: "查询成功", data: knowledgeBases });
   } catch (err) {
     console.log(err);
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message })  ;

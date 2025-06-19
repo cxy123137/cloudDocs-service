@@ -2,9 +2,10 @@ import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
 import { addKnowledgeBase } from './knowledgeBase.js';
 
+const { db } = await connectToDatabase();
+
 // 添加新用户
 export async function addUser(username, password, friends = []) {
-  const { db } = await connectToDatabase();
   const newUser = {
     _id: new ObjectId(), // 引入mongodb库来生成ObjectId
     username,
@@ -27,7 +28,6 @@ export async function addUser(username, password, friends = []) {
 
 // 获取用户信息
 export async function getUser(id) {
-  const { db } = await connectToDatabase();
   let users;
   if (id) {
     users = await db.collection('users').findOne({ _id: new ObjectId(id), valid: 1 });
@@ -39,7 +39,6 @@ export async function getUser(id) {
 
 // 修改用户信息
 export async function updateUser(id, username, friends, password, valid) {
-  const { db } = await connectToDatabase();
   const updateFields = {
     $set: {
       username,
@@ -55,7 +54,6 @@ export async function updateUser(id, username, friends, password, valid) {
 
 // 删除用户：后续优化为假删
 export async function deleteUser(id) {
-  const { db } = await connectToDatabase();
   const result = await db.collection('users').deleteOne({ _id: new ObjectId(id) });
   return result;
 }

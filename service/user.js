@@ -16,7 +16,7 @@ export async function addUser(username, password, friends = []) {
     updateTime: new Date(),
   };
   // 先根据ObjectId生成的用户id，添加一个默认的知识库
-  const base = await addKnowledgeBase('默认知识库', '默认知识库描述', new ObjectId(newUser._id)); // 默认添加一个知识库
+  const base = await addKnowledgeBase('我的知识库', '我的知识库', new ObjectId(newUser._id)); // 默认添加一个知识库
   const baseId = base.insertedId;
   // 关联获取到的知识库id，更新用户信息
   newUser.defaultKnowledgeBaseId = baseId;

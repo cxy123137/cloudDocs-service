@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import router from './routes/index.js'; // 引入路由模块
+import router from './router/index.js'; // 引入路由模块
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 const app = express();

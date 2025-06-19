@@ -1,7 +1,7 @@
 import express from 'express';
 import { connectToDatabase } from '../db.js';
 import jwt from 'jsonwebtoken';
-import { setContext, getContext } from '../context.js';
+import { setContext, getContext } from '../context/context.js';
 import { addUser, getUser } from '../service/user.js';
 import 'dotenv/config';
 import { getDefaultKnowledgeBaseIdByUserId } from '../service/knowledgeBase.js';
@@ -15,7 +15,7 @@ loginRouter.use(setContext);
 
 // 登录接口
 loginRouter.get('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.query;
   try {
     let user = await db.collection('users').findOne({username: username});
 

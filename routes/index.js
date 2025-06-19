@@ -1,8 +1,8 @@
 // 路由配置文件
-import { knowledgeBaseRouter } from './知识库.js';
-import { documentsrouter } from './文档.js';
-import { userRouter } from './用户.js';
-import { loginRouter } from './登录校验.js';
+import { knowledgeBaseRouter } from './knowledgeBase.js';
+import { documentsrouter } from './doc.js';
+import { userRouter } from './user.js';
+import { loginRouter } from './login.js';
 
 export default function (app) {
   app.use('/knowledgeBase', knowledgeBaseRouter);

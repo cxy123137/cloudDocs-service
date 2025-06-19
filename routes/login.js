@@ -2,7 +2,7 @@ import express from 'express';
 import { connectToDatabase } from '../db.js';
 import jwt from 'jsonwebtoken';
 import { setContext, getContext } from '../context.js';
-import { addUser } from '../service/用户.js';
+import { addUser } from '../service/user.js';
 import 'dotenv/config';
 
 const loginRouter = express.Router();
@@ -16,17 +16,19 @@ loginRouter.use(setContext);
 loginRouter.get('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const user = await db.collection('users').findOne({ username });
+    let user = await db.collection('users').findOne({username: username});
 
     if (!user) {
       // 自动注册
       await addUser(req);
+      user = await db.collection('users').findOne({username: username});
+      console.log(user);
     } else if (password !== user.password) {
       return res.status(401).json({ error: '密码错误' });
     }
 
     // 存储用户信息到上下文
-    const context = getContext();
+    let context = getContext();
     context.user = { 
       id: user._id, 
       username: user.username 

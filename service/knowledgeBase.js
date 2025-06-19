@@ -9,9 +9,9 @@ export async function addKnowledgeBase(req) {
     baseName: req.body.baseName,
     baseDesc: req.body.baseDesc,
     ownerId: new ObjectId(req.body.ownerId),
-    adminIds: req.body.adminIds ? [] : req.body.adminIds.map(id => new ObjectId(id)),
-    readaUserIds: req.body.readaUserIds ? [] : req.body.readaUserIds.map(id => new ObjectId(id)),
-    editaUserIds: req.body.editaUserIds ? [] : req.body.editaUserIds.map(id => new ObjectId(id)),
+    adminIds: req.body.adminIds ? req.body.adminIds.map(id => new ObjectId(id)) : [], // 默认为空数组
+    readaUserIds: req.body.readaUserIds ? req.body.readaUserIds.map(id => new ObjectId(id)) : [], // 默认为空数组
+    editaUserIds: req.body.editaUserIds ? req.body.editaUserIds.map(id => new ObjectId(id)) : [], // 默认为空数组
     docs: req.body.docs || [],
     valid: req.body.valid || 1, // 默认为1，表示有效
     createTime: new Date(),
@@ -36,9 +36,9 @@ export async function updateKnowledgeBase(req) {
   const knowledgeBaseData = {
     baseName: req.body.baseName,
     baseDesc: req.body.baseDesc,
-    adminIds: req.body.adminIds ? undefined : req.body.adminIds.map(id => new ObjectId(id)),
-    readaUserIds: req.body.readaUserIds ? undefined : req.body.readaUserIds.map(id => new ObjectId(id)),
-    editaUserIds: req.body.editaUserIds ? undefined : req.body.editaUserIds.map(id => new ObjectId(id)),
+    adminIds: req.body.adminIds ? req.body.adminIds.map(id => new ObjectId(id)) : undefined,
+    readaUserIds: req.body.readaUserIds ? req.body.readaUserIds.map(id => new ObjectId(id)) : undefined,
+    editaUserIds: req.body.editaUserIds ? req .body.editaUserIds.map(id => new ObjectId(id)) : undefined,
     docs: req.body.docs,
     valid: req.body.valid,
     updateTime: new Date(),

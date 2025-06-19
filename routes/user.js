@@ -1,5 +1,5 @@
 import express from 'express';
-import {addUser, getUser, updateUser, deleteUser} from '../service/用户.js';
+import {addUser, getUser, updateUser, deleteUser} from '../service/user.js';
 
 import { connectToDatabase } from '../db.js'; // 确保你有一个连接到MongoDB的函数
 const { db } = await connectToDatabase(); // 获取数据库连接

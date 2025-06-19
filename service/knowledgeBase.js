@@ -33,20 +33,26 @@ export async function getKnowledgeBase(id) {
   return knowledgeBases;
 }
 
-// 根据用户id查询用户的默认知识库id
+// 登录接口使用，根据用户id查询用户的默认知识库id
 export async function getDefaultKnowledgeBaseIdByUserId(userId) {
   const { db } = await connectToDatabase();
-  console.log(userId);
   const defaultKnowledgeBase = await db.collection('knowledgeBases').findOne({ownerId: new ObjectId(userId), valid: 1 });
-  console.log(defaultKnowledgeBase);
   
   return defaultKnowledgeBase._id;
 }
 
-// 登录接口使用，根据ownerId，查询知识库信息，只能查询一个
-export async function getKnowledgeBaseByOwnerId(ownerId) {
+// 根据userId，查询用户名下的所有知识库
+export async function getKnowledgeBaseByUserId(userId) {
   const { db } = await connectToDatabase();
-  const knowledgeBases = await db.collection('knowledgeBases').findOne({ ownerId: new ObjectId(ownerId), valid: 1 });
+  const knowledgeBases = await db.collection('knowledgeBases').find({
+    $or: [
+      { ownerId: new ObjectId(userId) },
+      { adminIds: new ObjectId(userId) },
+      { readaUserIds: new ObjectId(userId) },
+      { editaUserIds: new ObjectId(userId) }
+    ],
+    valid: 1
+  }).toArray();
   return knowledgeBases;
 }
 

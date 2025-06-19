@@ -1,5 +1,5 @@
 import express from 'express';
-import { addKnowledgeBase, getKnowledgeBase, getKnowledgeBaseByOwnerId, updateKnowledgeBase, deleteKnowledgeBase } from '../service/knowledgeBase.js';
+import { addKnowledgeBase, getKnowledgeBase, updateKnowledgeBase, deleteKnowledgeBase, getKnowledgeBaseByUserId } from '../service/knowledgeBase.js';
 const knowledgeBaseRouter = express.Router();
 
 // 创建单个知识库
@@ -14,7 +14,6 @@ knowledgeBaseRouter.post('/addKnowledgeBase', async (req, res) => {
 });
 
 // 根据单个id读取单个知识库，或者所有知识库
-// 后期需要的话，改为根据 ids 获取多个知识库
 knowledgeBaseRouter.get('/getKnowledgeBase', async (req, res) => {
   try {
     const { id } = req.query;
@@ -22,6 +21,18 @@ knowledgeBaseRouter.get('/getKnowledgeBase', async (req, res) => {
     res.status(200).json({ code: 200, message: "查询成功", data: knowledgeBases });
   } catch (err) {
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });
+  }
+});
+
+// 获取用户名下所有知识库的列表
+knowledgeBaseRouter.get('/getKnowledgeBases', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const knowledgeBases = await getKnowledgeBaseByUserId(userId);
+    res.status(200).json(knowledgeBases);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message })  ;
   }
 });
 

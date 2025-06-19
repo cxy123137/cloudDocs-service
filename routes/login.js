@@ -75,7 +75,7 @@ loginRouter.post('/register', async (req, res) => {
 
     // 生成 JWT
     const token = jwt.sign({ userId: userId }, SECRET_KEY, { expiresIn: '1h' });
-    res.status(200).json({ code: 200, message: "登录成功", token: token, defaultKnowledgeBaseId: baseId });
+    res.status(200).json({ code: 200, message: "注册成功", token: token, defaultKnowledgeBaseId: baseId });
     } catch (err) {
     console.error(err);
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });

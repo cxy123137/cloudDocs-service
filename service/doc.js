@@ -16,8 +16,7 @@ async function performDatabaseOperation(operation) {
 }
 
 // 新增文档
-export async function addDocument(title = "未命名文档", baseId, content = {}, 
-  version = 0, snapshotAtVersion = null, snapshot = '', valid = 1,) {
+export async function addDocument({title = "未命名文档", baseId, content = {}, version = 0, snapshotAtVersion = null, snapshot = '', valid = 1}) {
   const newDoc = {
     _id: new ObjectId(),
     title,
@@ -55,11 +54,10 @@ export async function getDocumentByBaseId(baseId) {
 }
 
 // 更新文档
-export async function updateDocument(id, title, content, valid) {
+export async function updateDocument({ id, title, content }) {
   const documentData = {
     title,
     content,
-    valid,
     updateTime: new Date(),
   };
   const result = await performDatabaseOperation(

@@ -28,8 +28,8 @@ documentsrouter.get('/getDocByBaseId', async (req, res) => {
 // 新建文档
 documentsrouter.post('/addDoc', async (req, res) => {
   try {
-    const { title, baseId, content, version, snapshotAtVersion, snapshot, valid,
-    } = req.body;
+    const { title, baseId, content, version, snapshotAtVersion, snapshot, valid } = req.body;
+    console.log(req.body);
     const result = await addDocument({
       title,
       baseId,
@@ -39,6 +39,8 @@ documentsrouter.post('/addDoc', async (req, res) => {
       snapshot,
       valid,
     });
+    console.log(result);
+    
     res.status(201).json({ code: 201, message: '文档新建成功', insertedId: result.insertedId });
   } catch (error) {
     res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: error.message });
@@ -49,12 +51,11 @@ documentsrouter.post('/addDoc', async (req, res) => {
 documentsrouter.put('/put/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, valid } = req.body;
+    const { title, content } = req.body;
     const result = await updateDocument({
       id,
       title,
-      content,
-      valid,
+      content
     });
     if (result.matchedCount === 1) {
       res.status(200).json({ code: 200, message: '文档更新成功' });

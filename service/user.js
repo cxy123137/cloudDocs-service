@@ -48,6 +48,14 @@ export async function updateUser(id, username, friends, password, valid) {
       updateTime: new Date(),
     },
   };
+
+  // 如果其中的字段有没传入的话，把该字段移除
+  Object.keys(updateFields.$set).forEach((key) => {
+    if (updateFields.$set[key] === undefined) {
+      delete updateFields.$set[key];
+    }
+  });
+    
   const result = await db.collection('users').updateOne({ _id: new ObjectId(id), valid: 1 }, updateFields);
   return result;
 }

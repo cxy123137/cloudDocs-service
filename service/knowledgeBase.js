@@ -65,6 +65,14 @@ export async function updateKnowledgeBase(id, baseName, baseDesc, adminIds, read
     valid,
     updateTime: new Date(),
   };
+
+  // 如果没有其中的字段有没传入的话，把该字段移除
+  Object.keys(knowledgeBaseData).forEach(key => {
+    if (knowledgeBaseData[key] === undefined) {
+      delete knowledgeBaseData[key];
+    }
+  });
+
   const result = await db.collection('knowledgeBases').updateOne({ _id: new ObjectId(id), valid: 1 }, { $set: knowledgeBaseData });
   return result;
 }

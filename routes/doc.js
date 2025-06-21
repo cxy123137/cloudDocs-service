@@ -29,8 +29,7 @@ documentsrouter.post('/addDoc', async (req, res) => {
 // 查询文档
 documentsrouter.get('/getDoc', async (req, res) => {
   try {
-    const docId = req.query;
-    const userId = getContext().user._id;
+    const { userId, docId } = req.query;
     const docs = await getDocument({ docId, userId });
     res.status(200).json(docs);
   } catch (error) {
@@ -42,7 +41,7 @@ documentsrouter.get('/getDoc', async (req, res) => {
 // 查询用户最近访问文档
 documentsrouter.get('/getRecentlyDoc', async (req, res) => {
   try {
-    const userId  = getContext().user._id;
+    const userId  = req.query.userId;
     const docs = await getDocumentByRecentlyUserId({ userId })
     res.status(200).json({ code: 200, message: '查询成功', data: docs });
   } catch (err) {

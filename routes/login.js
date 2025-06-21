@@ -28,14 +28,8 @@ loginRouter.post('/login', async (req, res) => {
       return res.status(401).json({ error: '密码错误' });
     }
     
+    // 获取默认数据库id
     const baseId = await getDefaultKnowledgeBaseIdByUserId(user._id);
-    
-    // 存储用户信息到上下文
-    let context = getContext();
-    context.user = { 
-      id: user._id, 
-      username: user.username 
-    };
 
     // 生成 Access Token 和 Refresh Token
     const accessToken = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1h' });
@@ -46,6 +40,7 @@ loginRouter.post('/login', async (req, res) => {
       message: "登录成功", 
       token: accessToken, 
       refreshToken: refreshToken,
+      userId: user._id,
       defaultKnowledgeBaseId: baseId 
     });
   } catch (err) {

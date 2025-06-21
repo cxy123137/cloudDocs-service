@@ -1,7 +1,29 @@
 import express from 'express';
-import { addDocument, getDocument, updateDocument, deleteDocument } from '../service/doc.js';
+import { addDocument, getDocument, getDocumentByBaseId, updateDocument, deleteDocument } from '../service/doc.js';
 
 const documentsrouter = express.Router();
+
+// 新建文档
+documentsrouter.post('/addDoc', async (req, res) => {
+  try {
+    const { title, baseId, ydocState, adminIds, readaUserIds, editaUserIds, valid } = req.body;
+    console.log(req.body);
+    const result = await addDocument({
+      title,
+      baseId,
+      ydocState,
+      adminIds,
+      readaUserIds,
+      editaUserIds,
+      valid,
+    });
+    console.log(result);
+    
+    res.status(201).json({ code: 201, message: '文档新建成功', insertedId: result.insertedId });
+  } catch (error) {
+    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: error.message });
+  }
+});
 
 // 查询文档
 documentsrouter.get('/getDoc', async (req, res) => {
@@ -18,32 +40,10 @@ documentsrouter.get('/getDoc', async (req, res) => {
 documentsrouter.get('/getDocByBaseId', async (req, res) => {
   try {
     const { baseId } = req.query;
-    const docs = await getDocument({ baseId });
+    const docs = await getDocumentByBaseId({ baseId });
     res.status(200).json({ code: 200, message: '查询成功', data: docs });
   } catch (err) {
     res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: err.message });
-  }
-});
-
-// 新建文档
-documentsrouter.post('/addDoc', async (req, res) => {
-  try {
-    const { title, baseId, content, version, snapshotAtVersion, snapshot, valid } = req.body;
-    console.log(req.body);
-    const result = await addDocument({
-      title,
-      baseId,
-      content,
-      version,
-      snapshotAtVersion,
-      snapshot,
-      valid,
-    });
-    console.log(result);
-    
-    res.status(201).json({ code: 201, message: '文档新建成功', insertedId: result.insertedId });
-  } catch (error) {
-    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: error.message });
   }
 });
 
@@ -51,11 +51,16 @@ documentsrouter.post('/addDoc', async (req, res) => {
 documentsrouter.put('/put/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content } = req.body;
+    const { title, baseId, ydocState, adminIds, readaUserIds, editaUserIds, valid } = req.body;
     const result = await updateDocument({
       id,
       title,
-      content
+      baseId,
+      ydocState,
+      adminIds,
+      readaUserIds,
+      editaUserIds,
+      valid,
     });
     if (result.matchedCount === 1) {
       res.status(200).json({ code: 200, message: '文档更新成功' });

@@ -16,15 +16,15 @@ async function performDatabaseOperation(operation) {
 }
 
 // 新增文档
-export async function addDocument({title = "未命名文档", baseId, content = {}, version = 0, snapshotAtVersion = null, snapshot = '', valid = 1}) {
+export async function addDocument({title = "未命名文档", baseId, ydocState = {}, adminIds = [], readaUserIds = [], editaUserIds = [], valid = 1}) {
   const newDoc = {
     _id: new ObjectId(),
     title,
     baseId: new ObjectId(baseId),
-    content,
-    version,
-    snapshotAtVersion,
-    snapshot,
+    ydocState,
+    adminIds: adminIds.map(id => new ObjectId(id)),
+    readaUserIds: readaUserIds.map(id => new ObjectId(id)),
+    editaUserIds: editaUserIds.map(id => new ObjectId(id)),
     valid,
     createTime: new Date(),
     updateTime: new Date(),
@@ -54,12 +54,26 @@ export async function getDocumentByBaseId(baseId) {
 }
 
 // 更新文档
-export async function updateDocument({ id, title, content }) {
+export async function updateDocument({ id, title, baseId, ydocState,
+      adminIds, readaUserIds, editaUserIds, valid = 1 }) {
   const documentData = {
     title,
-    content,
+    baseId: new ObjectId(baseId),
+    ydocState,
+    adminIds: adminIds ? adminIds.map(id => new ObjectId(id)) : undefined,
+    readaUserIds: readaUserIds ? readaUserIds.map(id => new ObjectId(id)) : undefined,
+    editaUserIds: editaUserIds ? editaUserIds.map(id => new ObjectId(id)) : undefined,
+    valid,
     updateTime: new Date(),
   };
+
+  // 如果有传入的字段为 undefined，则不更新该字段
+  Object.keys(documentData).forEach((key) => {
+    if (documentData[key] === undefined) {
+      delete documentData[key];
+    }
+  });
+
   const result = await performDatabaseOperation(
     db.collection('docs').updateOne(
       { _id: new ObjectId(id), valid: 1 },

@@ -35,8 +35,12 @@ export async function setupWSServer() {
       // 监听变更，持久化
       ydoc.on('update', async update => {
         const lastUpdatedDoc = await db.collection('docs').findOne({ _id: docId });
+        console.log(lastUpdatedDoc);
+        console.log(lastUpdatedDoc.updateTime);
+        
+        
         // 每隔10秒保存一次
-        if (lastUpdatedDoc?.updateTime && Date.now() - lastUpdatedDoc.updateTime.getTime() < 10000) {
+        if (Date.now() - lastUpdatedDoc.updateTime.getTime() < 10000) {
           return;
         }
         await db.collection('docs').updateOne(

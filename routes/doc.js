@@ -43,6 +43,7 @@ documentsrouter.get('/getDocByBaseId', async (req, res) => {
     const docs = await getDocumentByBaseId({ baseId });
     res.status(200).json({ code: 200, message: '查询成功', data: docs });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: err.message });
   }
 });

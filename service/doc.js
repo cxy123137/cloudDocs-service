@@ -47,7 +47,7 @@ export async function getDocument({ id } = {}) {
 }
 
 // 根据 baseId 查询文档
-export async function getDocumentByBaseId(baseId) {
+export async function getDocumentByBaseId({ baseId }) {
   return await performDatabaseOperation(
     db.collection('docs').find({ baseId: new ObjectId(baseId), valid: 1 }).toArray()
   );

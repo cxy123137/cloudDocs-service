@@ -60,16 +60,15 @@ documentsrouter.get('/getDocByBaseId', async (req, res) => {
   }
 });
 
-// 更新文档
-documentsrouter.put('/put/:id', async (req, res) => {
+// 编辑文档元数据
+documentsrouter.put('/updateDoc/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, baseId, ydocState, adminIds, readaUserIds, editaUserIds, valid } = req.body;
+    const { title, baseId, adminIds, readaUserIds, editaUserIds, valid } = req.body;
     const result = await updateDocument({
       id,
       title,
       baseId,
-      ydocState,
       adminIds,
       readaUserIds,
       editaUserIds,

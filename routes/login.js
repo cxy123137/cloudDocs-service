@@ -29,7 +29,6 @@ loginRouter.post('/login', async (req, res) => {
     }
     
     const baseId = await getDefaultKnowledgeBaseIdByUserId(user._id);
-    console.log(baseId);
     
     // 存储用户信息到上下文
     let context = getContext();
@@ -38,12 +37,37 @@ loginRouter.post('/login', async (req, res) => {
       username: user.username 
     };
 
-    // 生成 JWT
-    const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1h' });
-    res.status(200).json({ code: 201, message: "登录成功", token: token, defaultKnowledgeBaseId: baseId });
+    // 生成 Access Token 和 Refresh Token
+    const accessToken = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '7d' });
+
+    res.status(200).json({ 
+      code: 201, 
+      message: "登录成功", 
+      token: accessToken, 
+      refreshToken: refreshToken,
+      defaultKnowledgeBaseId: baseId 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });
+  }
+});
+
+// 刷新token接口
+loginRouter.post('/refreshToken', async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(401).json({ error: '缺少refreshToken' });
+  }
+  try {
+    // 校验 refreshToken
+    const payload = jwt.verify(refreshToken, SECRET_KEY);
+    // 生成新的 accessToken
+    const newAccessToken = jwt.sign({ userId: payload.userId }, SECRET_KEY, { expiresIn: '1h' });
+    res.status(200).json({ token: newAccessToken });
+  } catch (err) {
+    return res.status(401).json({ error: 'refreshToken无效或已过期' });
   }
 });
 

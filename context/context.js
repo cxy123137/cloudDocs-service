@@ -14,9 +14,10 @@ function setContext(req, res, next) {
     // 近似java的线程id，因为是单线程多路复用，所以每个用户都是一个请求
     requestId: req.headers['x-request-id'] || Math.random().toString(36).slice(2),
     user: {
+      // 从数据库填充
       _id: null, // 用户ID
       username: null // 用户名
-    } // 稍后从数据库填充
+    } 
   };
   asyncLocalStorage.run(context, () => next());
 }

@@ -91,7 +91,7 @@ export async function getDocument({ docId, userId }) {
 
   // 查询文档
   return await performDatabaseOperation(
-    db.collection('docs').findOne({ _id: new ObjectId(id), valid: 1 })
+    db.collection('docs').findOne({ _id: new ObjectId(docId), valid: 1 })
   );
 }
 

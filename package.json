@@ -16,7 +16,10 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.17.0"
+    "mongodb": "^6.17.0",
+    "ws": "^8.18.2",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.27"
   },
   "type": "module",
   "description": ""

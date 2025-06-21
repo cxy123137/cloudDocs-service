@@ -1,5 +1,6 @@
 import express from 'express';
 import { addDocument, getDocument, getDocumentByBaseId, updateDocument, deleteDocument, getDocumentByRecentlyUserId } from '../service/doc.js';
+import { getContext } from '../context/context.js';
 
 const documentsrouter = express.Router();
 
@@ -28,7 +29,8 @@ documentsrouter.post('/addDoc', async (req, res) => {
 // 查询文档
 documentsrouter.get('/getDoc', async (req, res) => {
   try {
-    const { docId, userId } = req.query;
+    const docId = req.query;
+    const userId = getContext().user._id;
     const docs = await getDocument({ docId, userId });
     res.status(200).json(docs);
   } catch (error) {
@@ -40,7 +42,7 @@ documentsrouter.get('/getDoc', async (req, res) => {
 // 查询用户最近访问文档
 documentsrouter.get('/getRecentlyDoc', async (req, res) => {
   try {
-    const { userId } = req.query;
+    const userId  = getContext().user._id;
     const docs = await getDocumentByRecentlyUserId({ userId })
     res.status(200).json({ code: 200, message: '查询成功', data: docs });
   } catch (err) {

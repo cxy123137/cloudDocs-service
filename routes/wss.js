@@ -1,4 +1,4 @@
-import { setupWSConnection, setPersistence } from 'y-websocket/bin/utils.js';
+import { setupWSConnection, setPersistence } from 'y-websocket/utils.js';
 import { WebSocketServer } from 'ws';
 import { connectToDatabase } from './db.js';
 import * as Y from 'yjs';

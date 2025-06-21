@@ -1,12 +1,15 @@
-import { setupWSConnection } from 'y-websocket/utils.js';
 import { WebSocketServer } from 'ws';
 import { connectToDatabase } from '../db.js';
 import * as Y from 'yjs';
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { setupWSConnection } = require('y-websocket/bin/utils.js');
 const wsPort = 8001;
 const { db } = await connectToDatabase();
 
-const docsMap = new Map(); // 用于缓存每个房间的 ydoc
+// 哈希表维护每个房间的ydoc
+const docsMap = new Map();
 
 export async function setupWSServer() {
   const wss = new WebSocketServer({ port: wsPort });

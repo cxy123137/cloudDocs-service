@@ -24,6 +24,8 @@ export async function setupWSServer() {
 
     // 获取ydoc
     let ydoc = docsMap.get(docId);
+    console.log(0);
+    
     // 如果ydoc不存在则创建
     if (!ydoc) {
       ydoc = new Y.Doc();
@@ -32,12 +34,12 @@ export async function setupWSServer() {
       if (doc && doc.ydocState) {
         Y.applyUpdate(ydoc, doc.ydocState);
       }
+      console.log(1);
+
       // 监听变更，持久化
       ydoc.on('update', async update => {
         const lastUpdatedDoc = await db.collection('docs').findOne({ _id: docId });
-        console.log(lastUpdatedDoc);
-        console.log(lastUpdatedDoc.updateTime);
-        
+        console.log(2);
         
         // 每隔10秒保存一次
         if (Date.now() - lastUpdatedDoc.updateTime.getTime() < 10000) {
@@ -49,10 +51,12 @@ export async function setupWSServer() {
           { upsert: true }
         );
       });
+
+      console.log(3);
       docsMap.set(docId, ydoc);
     }
 
-    // 
+    // 开启链接
     setupWSConnection(conn, req, { roomName: docId, doc: ydoc });
     console.log(`WebSocket 服务已启动：ws://localhost:${wsPort}`);
   });

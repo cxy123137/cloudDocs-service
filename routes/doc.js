@@ -1,5 +1,5 @@
 import express from 'express';
-import { addDocument, getDocument, getDocumentByBaseId, updateDocument, deleteDocument } from '../service/doc.js';
+import { addDocument, getDocument, getDocumentByBaseId, updateDocument, deleteDocument, getDocumentByRecentlyUserId } from '../service/doc.js';
 
 const documentsrouter = express.Router();
 
@@ -28,11 +28,23 @@ documentsrouter.post('/addDoc', async (req, res) => {
 // 查询文档
 documentsrouter.get('/getDoc', async (req, res) => {
   try {
-    const { id } = req.query;
-    const docs = await getDocument({ id });
+    const { docId, userId } = req.query;
+    const docs = await getDocument({ docId, userId });
     res.status(200).json(docs);
   } catch (error) {
     res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: error.message });
+  }
+});
+
+// 查询用户最近访问文档
+documentsrouter.get('/getRecentlyDoc', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const docs = await getDocumentByRecentlyUserId({ userId })
+    res.status(200).json({ code: 200, message: '查询成功', data: docs });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: err.message });
   }
 });
 

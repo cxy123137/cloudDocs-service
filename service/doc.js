@@ -26,6 +26,7 @@ export async function addDocument({title = "未命名文档", baseId, ydocState 
     readaUserIds: readaUserIds.map(id => new ObjectId(id)),
     editaUserIds: editaUserIds.map(id => new ObjectId(id)),
     valid,
+    recentlyOpenTime: new Date(),
     createTime: new Date(),
     updateTime: new Date(),
   };
@@ -33,17 +34,75 @@ export async function addDocument({title = "未命名文档", baseId, ydocState 
   return result;
 }
 
-// 查询文档，可以查询一个或者全部
-export async function getDocument({ id } = {}) {
-  if (id) {
-    return await performDatabaseOperation(
-      db.collection('docs').findOne({ _id: new ObjectId(id), valid: 1 })
+// 访问文档（配访客记录功能）
+export async function getDocument({ docId, userId }) {
+  // 每次访问文档时，更新最近访问时间 & 最近访问用户
+  // 1. 查询该用户是否已在 recentlyOpen 数组中：如果有，更新访问时间，否则 push 新记录
+  const doc = await db.collection('docs').findOne({
+    _id: new ObjectId(docId),
+    valid: 1,
+    'recentlyOpen.recentlyOpenUserId': new ObjectId(userId)
+  });
+
+  if (doc) {
+    // 用户已存在，更新访问时间
+    await db.collection('docs').updateOne(
+      {
+        _id: new ObjectId(docId),
+        valid: 1,
+        'recentlyOpen.recentlyOpenUserId': new ObjectId(userId)
+      },
+      {
+        $set: { 'recentlyOpen.$.recentlyOpenTime': new Date() }
+      }
     );
   } else {
-    return await performDatabaseOperation(
-      db.collection('docs').find({ valid: 1 }).toArray()
+    // 用户不存在访问记录，push 新记录
+    await db.collection('docs').updateOne(
+      { _id: new ObjectId(docId), valid: 1 },
+      {
+        $push: {
+          recentlyOpen: {
+            recentlyOpenUserId: new ObjectId(userId),
+            recentlyOpenTime: new Date()
+          }
+        }
+      }
     );
   }
+
+  // 懒删除，更改完最近访问用户的信息后，检查内部是否有过期的访客记录，并删除
+  await db.collection('docs').updateOne(
+    { 
+      _id: new ObjectId(docId),
+      valid: 1,
+    },
+    {
+      $pull: {
+        recentlyOpen: {
+          // 30 天前的记录视为过期
+          // recentlyOpenTime: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+          // 测试，十秒过期
+          recentlyOpenTime: { $lt: new Date(Date.now() - 10000) }
+        }
+      }
+    }
+  );
+
+  // 查询文档
+  return await performDatabaseOperation(
+    db.collection('docs').findOne({ _id: new ObjectId(id), valid: 1 })
+  );
+}
+
+// 查询最近访问文档，根据用户id是否存在于访客列表，查询出所有文档
+export async function getDocumentByRecentlyUserId({ userId }) {
+  return await performDatabaseOperation(
+    db.collection('docs').find({
+      'recentlyOpen.recentlyOpenUserId': new ObjectId(userId),
+      valid: 1
+    }).toArray()
+  );
 }
 
 // 根据 baseId 查询文档

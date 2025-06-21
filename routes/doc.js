@@ -32,6 +32,7 @@ documentsrouter.get('/getDoc', async (req, res) => {
     const docs = await getDocument({ docId, userId });
     res.status(200).json(docs);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: error.message });
   }
 });

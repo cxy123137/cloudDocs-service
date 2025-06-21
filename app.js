@@ -44,7 +44,7 @@ app.use((req, res, next) => {
 // 路由注册
 router(app);
 // WebSocket服务
-setupWSServer();
+await setupWSServer();
 
 // 启动服务器
 app.listen(port, () => {

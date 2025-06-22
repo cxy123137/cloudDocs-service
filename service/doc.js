@@ -27,7 +27,7 @@ export async function addDocument({title = "未命名文档", baseId, ydocState 
     readaUserIds: readaUserIds.map(id => new ObjectId(id)),
     editaUserIds: editaUserIds.map(id => new ObjectId(id)),
     valid,
-    recentlyOpenTime: new Date(),
+    recentlyOpen: [],
     createTime: new Date(),
     updateTime: new Date(),
   };

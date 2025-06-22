@@ -4,6 +4,7 @@ import { getDocument } from '../service/doc.js'
 import * as Y from 'yjs';
 
 import { createRequire } from 'module';
+import { ObjectId } from 'mongodb';
 const require = createRequire(import.meta.url);
 const { setupWSConnection } = require('y-websocket/bin/utils.js');
 const wsPort = 8001;
@@ -21,8 +22,8 @@ export async function setupWSServer() {
       conn.close();
       return;
     }
-    const userId = parts[2];
-    const docId = parts[3] || 'default';
+    const userId = parts[2].toString();
+    const docId = parts[3].toString() || 'default';        
 
     // 获取ydoc
     let ydoc = docsMap.get(docId);
@@ -31,7 +32,13 @@ export async function setupWSServer() {
     if (!ydoc) {
       ydoc = new Y.Doc();
       // 加载历史状态（使用最近访问逻辑更新，使用ws连接查询文档）
-      const doc = await getDocument({ docId, userId });
+    //   const doc = await getDocument({ docId, userId });
+      
+      const doc = await db.collection('docs').findOne({ _id: docId });
+      console.log(doc);
+    //   console.log(doc.ydocState);
+      
+      
       if (doc && doc.ydocState) {
         Y.applyUpdate(ydoc, doc.ydocState);
       }
@@ -53,12 +60,11 @@ export async function setupWSServer() {
         );
       });
 
-      console.log(3);
       docsMap.set(docId, ydoc);
     }
 
     // 开启链接
     setupWSConnection(conn, req, { roomName: docId, doc: ydoc });
-    console.log(`WebSocket 服务已启动：ws://localhost:${wsPort}`);
+    console.log(`WebSocket 服务已启动：ws://localhost:${wsPort}/${docId}`);
   });
 }

@@ -96,12 +96,60 @@ export async function getDocument({ docId, userId }) {
 }
 
 // 查询最近访问文档，根据用户id是否存在于访客列表，查询出所有文档
+// 同时连表查询，前端需要渲染的 文档归属人昵称 & 归属知识库名称
 export async function getDocumentByRecentlyUserId({ userId }) {
   return await performDatabaseOperation(
-    db.collection('docs').find({
-      'recentlyOpen.recentlyOpenUserId': new ObjectId(userId),
-      valid: 1
-    }).toArray()
+    db.collection('docs').aggregate([
+      {
+        $match: {
+          "recentlyOpen.recentlyOpenUserId": new ObjectId(userId),
+          valid: 1
+        }
+      },
+      {
+        $lookup: {
+        from: "users",                // 关联的目标集合
+        localField: "ownerId",        // 当前集合的关联字段
+        foreignField: "_id",          // 目标集合的关联字段
+        as: "userInfo"                // 结果放入的字段名
+        }
+      },
+      {
+        // $unwind: "$userInfo"   // 将数组形式的 userInfo 拆解为对象
+        $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true }
+      },
+      {
+        $addFields: {
+        "nikeName": "$userInfo.nikeName",   // 提取用户nikeName
+        }
+      },
+      {
+        $project: {
+          "userInfo": 0  // 移除整个 userInfo 对象，只保留nikeName
+        }
+      },
+      {
+        $lookup: {
+          from: "knowledgeBases",
+          localField: "baseId",
+          foreignField: "_id",
+          as: "baseInfo"
+        }
+      },
+      {
+        $unwind: { path: "$baseInfo", preserveNullAndEmptyArrays: true }
+      },
+      {
+        $addFields: {
+          "baseName": "$baseInfo.baseName",
+        }
+      },
+      {
+        $project: {
+          "baseInfo": 0
+        }
+      }
+    ]).toArray()
   );
 }
 

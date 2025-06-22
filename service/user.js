@@ -5,9 +5,12 @@ import { addKnowledgeBase } from './knowledgeBase.js';
 const { db } = await connectToDatabase();
 
 // 添加新用户
-export async function addUser(username, password, friends = []) {
+export async function addUser({ nickName, username, password, friends = [] }) {
+  // 拼接_id的后六位作为默认的用户名
+  const _id = new ObjectId();
   const newUser = {
-    _id: new ObjectId(), // 引入mongodb库来生成ObjectId
+    _id,
+    nickName: nickName ? nickName : '用户' + _id.toString().slice(-6),
     username,
     friends: friends.map((friend) => new ObjectId(friend)), // 默认为空数组
     password, // 生产环境密码需要加密
@@ -16,8 +19,12 @@ export async function addUser(username, password, friends = []) {
     createTime: new Date(),
     updateTime: new Date(),
   };
+
+  console.log(newUser.nickName);
+  
+  
   // 先根据ObjectId生成的用户id，添加一个默认的知识库
-  const base = await addKnowledgeBase('我的知识库', '我的知识库', new ObjectId(newUser._id)); // 默认添加一个知识库
+  const base = await addKnowledgeBase('我的知识库', '我的知识库', _id.toString()); // 默认添加一个知识库
   const baseId = base.insertedId;
   // 关联获取到的知识库id，更新用户信息
   newUser.defaultKnowledgeBaseId = baseId;
@@ -38,9 +45,10 @@ export async function getUser(id) {
 }
 
 // 修改用户信息
-export async function updateUser(id, username, friends, password, valid) {
+export async function updateUser({ id, nickName, username, friends, password, valid }) {
   const updateFields = {
     $set: {
+      nickName,
       username,
       friends: friends ? friends.map((friend) => new ObjectId(friend)) : undefined,
       password, // 注意：在真实应用中，密码不应该明文存储

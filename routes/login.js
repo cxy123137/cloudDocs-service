@@ -68,7 +68,7 @@ loginRouter.get('/refreshToken', async (req, res) => {
 
 // 注册接口
 loginRouter.post('/register', async (req, res) => {
-  const { username, password } = req.body;
+  const { nickName, username, password } = req.body;
   try {
     let user = await db.collection('users').findOne({username: username});
 
@@ -77,7 +77,7 @@ loginRouter.post('/register', async (req, res) => {
     }
 
     // 创建新用户
-    await addUser(username, password);
+    await addUser({ nickName, username, password });
     res.status(200).json({ code: 200, message: "注册成功" });
     } catch (err) {
     console.error(err);

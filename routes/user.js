@@ -17,8 +17,8 @@ userRouter.get('/testDBGet', async (req, res) => {
 // 创建新用户
 userRouter.post('/addUser', async (req, res) => {
   try {
-    const { username, password, friends } = req.body;
-    const result = await addUser(username, password, friends);
+    const { nickName, username, password, friends } = req.body;
+    const result = await addUser({ nickName, username, password, friends });
     res.status(201).json({ code: 200, message: "用户创建成功", data: result.insertedId });
   } catch (err) {
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });
@@ -40,8 +40,8 @@ userRouter.get('/getUser', async (req, res) => {
 userRouter.put('/updateUser/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { username, friends, password, valid } = req.body;
-    const result = await updateUser(id, username, friends, password, valid);
+    const { nickName, username, friends, password, valid } = req.body;
+    const result = await updateUser({ id, nickName, username, friends, password, valid });
     if (result.matchedCount === 0) {
       return res.status(404).json({ code: 404, message: "用户未找到" });
     }

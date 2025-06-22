@@ -32,6 +32,9 @@ export async function setupWSServer() {
     // 如果ydoc不存在则创建
     if (!ydoc) {
       ydoc = new Y.Doc();
+      // 确保创建共享类型（与前端的'quill'对应）
+      ydoc.getText('quill'); // 关键！创建相同的共享类型
+  
       // 加载历史状态（使用最近访问逻辑更新，使用ws连接查询文档）
       const doc = await getDocument({ docId, userId });    
     //   const doc = await db.collection('docs').findOne({ _id: new ObjectId(docId) });      

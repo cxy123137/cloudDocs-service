@@ -17,6 +17,7 @@ export async function setupWSServer() {
   const wss = new WebSocketServer({ port: wsPort });
 
   wss.on('connection', async (conn, req) => {
+    
     const parts = req.url.split('/');
     if (parts[1] !== 'onlineEdit') {
       conn.close();
@@ -26,48 +27,45 @@ export async function setupWSServer() {
     const docId = parts[3].toString() || 'default';        
 
     // 获取ydoc
-    let ydoc = docsMap.get(docId);
+    let ydoc = docsMap.get(docId);      
     
     // 如果ydoc不存在则创建
     if (!ydoc) {
       ydoc = new Y.Doc();
       // 加载历史状态（使用最近访问逻辑更新，使用ws连接查询文档）
-    //   const doc = await getDocument({ docId, userId });
+      const doc = await getDocument({ docId, userId });    
+    //   const doc = await db.collection('docs').findOne({ _id: new ObjectId(docId) });      
       
-      const doc = await db.collection('docs').findOne({ _id: docId });
-    //   console.log(doc.ydocState);
-      
-      
-      if (doc && doc.ydocState) {
-        Y.applyUpdate(ydoc, doc.ydocState);
+      if (doc) {
+        // 从数据库的binary转化为Uint8Array给ydoc所需
+        Y.applyUpdate(ydoc, new Uint8Array(doc.ydocState.buffer));
       }
 
       // 监听变更，持久化
       ydoc.on('update', async update => {
-        // 这里不要用写好的方法查询，不是用户主动行为，否则调用原有方法会导致最近访问被更新
+        console.log(111);
+        
+    // 这里不要用写好的方法查询，不是用户主动行为，否则调用原有方法会导致最近访问被更新
         const lastUpdatedDoc = await db.collection('docs').findOne({ _id: docId });
-        
-        console.log("last"+lastUpdatedDoc);
-        
-        // 每隔10秒保存一次
+       
+      // 每隔10秒保存一次
         if (Date.now() - lastUpdatedDoc.updateTime.getTime() < 10000) {
-            console.log(111);
-            
+          // console.log(111);
+          
           return;
         }
-
-        console.log(222);
         
-        // 仅修改文本内容，不对 元数据/访客记录 作任何的更新，三者逻辑已经分割
         await db.collection('docs').updateOne(
           { _id: docId },
-          { $set: { ydocState: Y.encodeStateAsUpdate(ydoc), updateTime: new Date() } },
+          { $set: { ydocState: new Binary(Y.encodeStateAsUpdate(ydoc)), updateTime: new Date() } },
           { upsert: true }
         );
       });
 
       docsMap.set(docId, ydoc);
     }
+
+    
 
     // 开启链接
     setupWSConnection(conn, req, { roomName: docId, doc: ydoc });

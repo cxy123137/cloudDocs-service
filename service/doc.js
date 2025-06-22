@@ -1,5 +1,8 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
+import * as Y from 'yjs';
+import { Binary } from 'mongodb'; // 用于处理二进制数据
+
 
 // 连接到数据库
 const { db } = await connectToDatabase();
@@ -16,7 +19,12 @@ async function performDatabaseOperation(operation) {
 }
 
 // 新增文档
-export async function addDocument({title = "未命名文档", baseId, ydocState = {}, ownerId, adminIds = [], readaUserIds = [], editaUserIds = [], valid = 1}) {
+export async function addDocument({title = "未命名文档", baseId, ownerId, adminIds = [], readaUserIds = [], editaUserIds = [], valid = 1}) {
+  
+  const emptyYDoc = new Y.Doc();
+  const emptyUpdate = Y.encodeStateAsUpdate(emptyYDoc); // 返回Uint8Array
+  const ydocState = new Binary(emptyUpdate); // 转换为MongoDB Binary
+  
   const newDoc = {
     _id: new ObjectId(),
     title,

@@ -16,12 +16,13 @@ async function performDatabaseOperation(operation) {
 }
 
 // 新增文档
-export async function addDocument({title = "未命名文档", baseId, ydocState = {}, adminIds = [], readaUserIds = [], editaUserIds = [], valid = 1}) {
+export async function addDocument({title = "未命名文档", baseId, ydocState = {}, ownerId, adminIds = [], readaUserIds = [], editaUserIds = [], valid = 1}) {
   const newDoc = {
     _id: new ObjectId(),
     title,
     baseId: new ObjectId(baseId),
     ydocState,
+    ownerId,
     adminIds: adminIds.map(id => new ObjectId(id)),
     readaUserIds: readaUserIds.map(id => new ObjectId(id)),
     editaUserIds: editaUserIds.map(id => new ObjectId(id)),

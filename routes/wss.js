@@ -1,5 +1,6 @@
 import { WebSocketServer } from 'ws';
 import { connectToDatabase } from '../db.js';
+import { getDocument } from '../service/doc.js'
 import * as Y from 'yjs';
 
 import { createRequire } from 'module';

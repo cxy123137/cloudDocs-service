@@ -7,12 +7,13 @@ const documentsrouter = express.Router();
 // 新建文档
 documentsrouter.post('/addDoc', async (req, res) => {
   try {
-    const { title, baseId, ydocState, adminIds, readaUserIds, editaUserIds, valid } = req.body;
+    const { title, baseId, ydocState, ownerId, adminIds, readaUserIds, editaUserIds, valid } = req.body;
     console.log(req.body);
     const result = await addDocument({
       title,
       baseId,
       ydocState,
+      ownerId,
       adminIds,
       readaUserIds,
       editaUserIds,
@@ -71,6 +72,7 @@ documentsrouter.put('/updateDoc/:id', async (req, res) => {
       id,
       title,
       baseId,
+      ownerId,
       adminIds,
       readaUserIds,
       editaUserIds,

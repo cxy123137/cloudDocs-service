@@ -35,7 +35,6 @@ export async function setupWSServer() {
     //   const doc = await getDocument({ docId, userId });
       
       const doc = await db.collection('docs').findOne({ _id: docId });
-      console.log(doc);
     //   console.log(doc.ydocState);
       
       
@@ -48,10 +47,17 @@ export async function setupWSServer() {
         // 这里不要用写好的方法查询，不是用户主动行为，否则调用原有方法会导致最近访问被更新
         const lastUpdatedDoc = await db.collection('docs').findOne({ _id: docId });
         
+        console.log("last"+lastUpdatedDoc);
+        
         // 每隔10秒保存一次
         if (Date.now() - lastUpdatedDoc.updateTime.getTime() < 10000) {
+            console.log(111);
+            
           return;
         }
+
+        console.log(222);
+        
         // 仅修改文本内容，不对 元数据/访客记录 作任何的更新，三者逻辑已经分割
         await db.collection('docs').updateOne(
           { _id: docId },

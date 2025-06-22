@@ -20,31 +20,31 @@ export async function setupWSServer() {
       conn.close();
       return;
     }
-    const docId = parts[2] || 'default';
+    const userId = parts[2];
+    const docId = parts[3] || 'default';
 
     // 获取ydoc
     let ydoc = docsMap.get(docId);
-    console.log(0);
     
     // 如果ydoc不存在则创建
     if (!ydoc) {
       ydoc = new Y.Doc();
-      // 加载历史状态
-      const doc = await db.collection('docs').findOne({ _id: docId });
+      // 加载历史状态（使用最近访问逻辑更新，使用ws连接查询文档）
+      const doc = await getDocument({ docId, userId });
       if (doc && doc.ydocState) {
         Y.applyUpdate(ydoc, doc.ydocState);
       }
-      console.log(1);
 
       // 监听变更，持久化
       ydoc.on('update', async update => {
+        // 这里不要用写好的方法查询，不是用户主动行为，否则调用原有方法会导致最近访问被更新
         const lastUpdatedDoc = await db.collection('docs').findOne({ _id: docId });
-        console.log(2);
         
         // 每隔10秒保存一次
         if (Date.now() - lastUpdatedDoc.updateTime.getTime() < 10000) {
           return;
         }
+        // 仅修改文本内容，不对 元数据/访客记录 作任何的更新，三者逻辑已经分割
         await db.collection('docs').updateOne(
           { _id: docId },
           { $set: { ydocState: Y.encodeStateAsUpdate(ydoc), updateTime: new Date() } },

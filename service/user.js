@@ -1,11 +1,12 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
 import { addKnowledgeBase } from './knowledgeBase.js';
+import { use } from 'react';
 
 const { db } = await connectToDatabase();
 
 // 添加新用户
-export async function addUser({ nickName, username, password, friends = [] }) {
+export async function addUser({ nickName, username, password, friends = [], applyfriends = [] }) {
   // 拼接_id的后六位作为默认的用户名
   const _id = new ObjectId();
   const newUser = {
@@ -13,6 +14,7 @@ export async function addUser({ nickName, username, password, friends = [] }) {
     nickName: nickName ? nickName : '用户' + _id.toString().slice(-6),
     username,
     friends: friends.map((friend) => new ObjectId(friend)), // 默认为空数组
+    applyfriends: applyfriends.map((applyfriend) => new ObjectId(applyfriend)), // 默认为空数组
     password, // 生产环境密码需要加密
     defaultKnowledgeBaseId: undefined,
     valid: 1, // 默认为1，表示有效
@@ -74,9 +76,87 @@ export async function deleteUser(id) {
   return result;
 }
 
-// 获取用户好友
+// 查询陌生人（根据陌生人的username）（用户id需要传入判断不是好友）
+export async function getStrangerByName(username, userId) {
+  const user = await db.collection('users').findOne({ valid: 1, userId });
+  const stranger = await db.collection('users').findOne({ valid: 1, _id: { $nin: user.friends }, username });
+  
+  return stranger;
+}
+
 // 获取好友列表
-// 获取好友申请列表
+export async function getFriends(userId) {
+  const user = await db.collection('users').findOne({ _id: new ObjectId(userId), valid: 1 });
+  const friends = await db.collection('users').find({ _id: { $in: user.friends }, valid: 1 }).toArray();
+  
+  return friends;
+}
+
+// 获取申请好友列表
+export async function getApplyFriends(userId) {
+  const user = await db.collection('users').findOne({ _id: new ObjectId(userId), valid: 1 });
+  const applyFriends = await db.collection('users').find({ _id: { $in: user.applyfriends }, valid: 1 }).toArray();
+  
+  return applyFriends;
+}
+
+// 添加好友
+export async function addFriend(userId, friendId) {
+  // 先判断是否已经是好友
+  const user = await db.collection('users').findOne({ _id: new ObjectId(userId), valid: 1 });
+  const isFriend = user.friends.includes(new ObjectId(friendId));
+  if (isFriend) {
+    return { message: '已经是好友' };
+  }
+  // 再把用户id添加进入被申请人的申请好友列表applyfriends
+  const updateField = {
+    $addToSet: {
+      applyfriends: new ObjectId(userId),
+    }
+  };
+  const result = await db.collection('users').updateOne({ _id: new ObjectId(friendId), valid: 1 }, updateField);
+  return result;
+}
+
+// 处理好友申请
+export async function handleApplyFriend(userId, friendId, handleType) {
+  const updateMyFriends = {
+    $addToSet: {
+      friends: new ObjectId(friendId),
+    },
+  };
+  const updateStrangerFriends = {
+    $addToSet: {
+      friends: new ObjectId(userId),
+    },
+    $pull: {
+      applyfriends: new ObjectId(userId),
+    },
+  };
+  };
+
+  if (handleType === 'accept') {
+    updateFields.$addToSet = {
+      friends: new ObjectId(friendId),
+    };
+  }
+  const result = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, updateFields);
+  return result;
+}
+
+// 删除好友
+export async function deleteFriend(userId, friendId) {
+  const updateFields = {
+    $pull: {
+      friends: new ObjectId(friendId),
+    },
+  };
+  const result = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, updateFields);
+  return result;
+}
+
+
+
 // 添加好友申请
 // 处理好友申请
 // 删除好友

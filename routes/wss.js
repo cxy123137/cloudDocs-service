@@ -37,8 +37,12 @@ export async function setupWSServer() {
 
       // 加载历史数据（如果有）
       try {
+        console.log("是否有历史数据");
+        
         const doc = await getDocument({ docId, userId });
         Y.applyUpdate(ydoc, new Uint8Array(doc.ydocState));
+        console.log("后端数据库历史数据", new Uint8Array(doc.ydocState));
+        
       } catch (e) {
         console.error('加载历史数据失败:', e);
       }
@@ -65,8 +69,8 @@ export async function setupWSServer() {
         
         try {
           // 应用更新到ydoc
-        //   Y.applyUpdate(ydoc, update);
-          safeApplyUpdate(ydoc, update);
+          Y.applyUpdate(ydoc, update);
+        //   safeApplyUpdate(ydoc, update);
         } catch (err) {
           console.error('处理消息失败:', err);
         }

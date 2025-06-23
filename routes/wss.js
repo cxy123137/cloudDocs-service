@@ -56,7 +56,6 @@ export async function setupWSServer() {
     setupWSConnection(conn, req, { 
       roomName: docId, 
       doc: ydoc,
-      disableBc: true // 禁用自动广播
     });
 
     // 手动处理接收到的消息

@@ -16,14 +16,14 @@ async function performDatabaseOperation(operation) {
 }
 
 // 新增文档
-export async function addDocument({title = "未命名文档", baseId, rootDocId = null,
+export async function addDocument({title = "未命名文档", baseId, rootDocId = undefined,
       ownerId, content = {}, adminIds = [], readaUserIds = [], editaUserIds = [], valid = 1}) {
   const newDoc = {
     _id: new ObjectId(),
     title,
     baseId: new ObjectId(baseId),
-    rootDocId,
-    ownerId,
+    // rootDocId,
+    // ownerId,
     content,
     adminIds: adminIds.map(id => new ObjectId(id)),
     readaUserIds: readaUserIds.map(id => new ObjectId(id)),
@@ -164,12 +164,13 @@ export async function getDocumentByBaseId({ baseId }) {
 }
 
 // 更新文档
-export async function updateDocument({ id, title, baseId, rootDocId, content,
+export async function updateDocument({ id, title, baseId, ownerId, rootDocId, content,
       adminIds, readaUserIds, editaUserIds, valid }) {
   const documentData = {
     title,
     baseId: new ObjectId(baseId),
-    rootDocId,
+    // ownerId,
+    // rootDocId,
     content,
     adminIds: adminIds ? adminIds.map(id => new ObjectId(id)) : undefined,
     readaUserIds: readaUserIds ? readaUserIds.map(id => new ObjectId(id)) : undefined,
@@ -186,9 +187,11 @@ export async function updateDocument({ id, title, baseId, rootDocId, content,
   });
 
   const result = await db.collection('docs').updateOne(
-      { _id: new ObjectId(id), valid: 1 },
-      { $set: documentData }
-    );
+    { _id: new ObjectId(id), valid: 1 },
+    { $set: documentData }
+  );
+  console.log(result);
+  
   return result;
 }
 

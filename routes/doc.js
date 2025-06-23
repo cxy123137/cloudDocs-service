@@ -12,9 +12,9 @@ documentsrouter.post('/addDoc', async (req, res) => {
     const result = await addDocument({
       title,
       baseId,
-      rootDocId,
+      // rootDocId,
       content,
-      ownerId,
+      // ownerId,
       adminIds,
       readaUserIds,
       editaUserIds,

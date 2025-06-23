@@ -157,7 +157,6 @@ export async function getDocumentByRecentlyUserId({ userId }) {
 // 根据 baseId 查询文档
 export async function getDocumentByBaseId({ baseId }) {
   const result = await db.collection('docs').find({ baseId: new ObjectId(baseId), valid: 1 }).toArray();
-  console.log(result);
   
   return result;
 }
@@ -167,7 +166,7 @@ export async function updateDocument({ id, title, baseId, ownerId, rootDocId, co
       adminIds, readaUserIds, editaUserIds, valid }) {
   const documentData = {
     title,
-    baseId: new ObjectId(baseId),
+    baseId: baseId ? new ObjectId(baseId) : undefined,
     ownerId,
     rootDocId,
     content,

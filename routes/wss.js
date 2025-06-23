@@ -35,7 +35,10 @@ export async function setupWSServer() {
       // 关键！必须与前端完全一致的共享类型初始化
       const ytext = ydoc.getText('quill'); // 确保类型名称与前端一致
 
-       console.log("后端数据库历史数据", new Uint8Array(doc.ydocState));
+      const testdoc = await getDocument({ docId, userId });
+      console.log("数据库数据", new Uint8Array(testdoc.ydocState));
+      
+
       // 加载历史数据（如果有）
       try {
         console.log("是否有历史数据");

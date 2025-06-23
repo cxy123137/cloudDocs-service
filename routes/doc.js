@@ -7,12 +7,13 @@ const documentsrouter = express.Router();
 // 新建文档
 documentsrouter.post('/addDoc', async (req, res) => {
   try {
-    const { title, baseId, ydocState, ownerId, adminIds, readaUserIds, editaUserIds, valid } = req.body;
+    const { title, baseId, rootDocId, content, ownerId, adminIds, readaUserIds, editaUserIds, valid } = req.body;
     console.log(req.body);
     const result = await addDocument({
       title,
       baseId,
-      ydocState,
+      rootDocId,
+      content,
       ownerId,
       adminIds,
       readaUserIds,
@@ -63,16 +64,17 @@ documentsrouter.get('/getDocByBaseId', async (req, res) => {
   }
 });
 
-// 编辑文档元数据
+// 更新文档数据
 documentsrouter.put('/updateDoc/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, baseId, adminIds, readaUserIds, editaUserIds, valid } = req.body;
+    const { title, baseId, rootDocId, content, adminIds, readaUserIds, editaUserIds, valid } = req.body;
     const result = await updateDocument({
       id,
       title,
       baseId,
-      ownerId,
+      rootDocId,
+      content,
       adminIds,
       readaUserIds,
       editaUserIds,

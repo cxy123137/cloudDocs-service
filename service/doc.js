@@ -1,8 +1,5 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
-import * as Y from 'yjs';
-import { Binary } from 'mongodb'; // 用于处理二进制数据
-
 
 // 连接到数据库
 const { db } = await connectToDatabase();
@@ -19,18 +16,15 @@ async function performDatabaseOperation(operation) {
 }
 
 // 新增文档
-export async function addDocument({title = "未命名文档", baseId, ownerId, adminIds = [], readaUserIds = [], editaUserIds = [], valid = 1}) {
-  
-  const emptyYDoc = new Y.Doc();
-  const emptyUpdate = Y.encodeStateAsUpdate(emptyYDoc); // 返回Uint8Array
-  const ydocState = new Binary(emptyUpdate); // 转换为MongoDB Binary
-  
+export async function addDocument({title = "未命名文档", baseId, rootDocId = null,
+      ownerId, content = {}, adminIds = [], readaUserIds = [], editaUserIds = [], valid = 1}) {
   const newDoc = {
     _id: new ObjectId(),
     title,
     baseId: new ObjectId(baseId),
-    ydocState,
+    rootDocId,
     ownerId,
+    content,
     adminIds: adminIds.map(id => new ObjectId(id)),
     readaUserIds: readaUserIds.map(id => new ObjectId(id)),
     editaUserIds: editaUserIds.map(id => new ObjectId(id)),
@@ -89,10 +83,10 @@ export async function getDocument({ docId, userId }) {
     {
       $pull: {
         recentlyOpen: {
-          // 30 天前的记录视为过期
-          // recentlyOpenTime: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+          // 3 天前的记录视为过期
+          recentlyOpenTime: { $lt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }
           // 测试，十秒过期
-          recentlyOpenTime: { $lt: new Date(Date.now() - 10000) }
+          // recentlyOpenTime: { $lt: new Date(Date.now() - 10000) }
         }
       }
     }
@@ -170,12 +164,13 @@ export async function getDocumentByBaseId({ baseId }) {
 }
 
 // 更新文档
-export async function updateDocument({ id, title, baseId, ydocState,
-      adminIds, readaUserIds, editaUserIds, valid = 1 }) {
+export async function updateDocument({ id, title, baseId, rootDocId, content,
+      adminIds, readaUserIds, editaUserIds, valid }) {
   const documentData = {
     title,
     baseId: new ObjectId(baseId),
-    ydocState,
+    rootDocId,
+    content,
     adminIds: adminIds ? adminIds.map(id => new ObjectId(id)) : undefined,
     readaUserIds: readaUserIds ? readaUserIds.map(id => new ObjectId(id)) : undefined,
     editaUserIds: editaUserIds ? editaUserIds.map(id => new ObjectId(id)) : undefined,

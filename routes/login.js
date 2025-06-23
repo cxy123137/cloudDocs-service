@@ -51,7 +51,7 @@ loginRouter.post('/login', async (req, res) => {
 
 // 刷新token接口
 loginRouter.get('/refreshToken', async (req, res) => {
-  const { refreshToken } = req.body;
+  const { refreshToken } = req.query;
   if (!refreshToken) {
     return res.status(401).json({ error: '缺少refreshToken' });
   }

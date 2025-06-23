@@ -33,7 +33,7 @@ export async function addDocument({title = "未命名文档", baseId, rootDocId 
     createTime: new Date(),
     updateTime: new Date(),
   };
-  const result = await performDatabaseOperation(db.collection('docs').insertOne(newDoc));
+  const result = await db.collection('docs').insertOne(newDoc);
   return result;
 }
 
@@ -93,9 +93,7 @@ export async function getDocument({ docId, userId }) {
   );
 
   // 查询文档
-  return await performDatabaseOperation(
-    db.collection('docs').findOne({ _id: new ObjectId(docId), valid: 1 })
-  );
+  return await db.collection('docs').findOne({ _id: new ObjectId(docId), valid: 1 })
 }
 
 // 查询最近访问文档，根据用户id是否存在于访客列表，查询出所有文档
@@ -158,9 +156,7 @@ export async function getDocumentByRecentlyUserId({ userId }) {
 
 // 根据 baseId 查询文档
 export async function getDocumentByBaseId({ baseId }) {
-  return await performDatabaseOperation(
-    db.collection('docs').find({ baseId: new ObjectId(baseId), valid: 1 }).toArray()
-  );
+  return await db.collection('docs').find({ baseId: new ObjectId(baseId), valid: 1 }).toArray()
 }
 
 // 更新文档

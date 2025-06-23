@@ -22,7 +22,7 @@ app.use(express.json());
 // 全局拦截请求，必须登录
 app.use((req, res, next) => {
   // 白名单
-  if (req.path === '/login/login' || req.path === '/login/register' || req.path === '/login//refreshToken') {
+  if (req.path === '/login/login' || req.path === '/login/register' || req.path === '/login/refreshToken') {
     return next();
   }
 

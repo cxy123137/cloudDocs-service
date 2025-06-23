@@ -22,8 +22,8 @@ export async function addDocument({title = "未命名文档", baseId, rootDocId 
     _id: new ObjectId(),
     title,
     baseId: new ObjectId(baseId),
-    // rootDocId,
-    // ownerId,
+    rootDocId,
+    ownerId,
     content,
     adminIds: adminIds.map(id => new ObjectId(id)),
     readaUserIds: readaUserIds.map(id => new ObjectId(id)),
@@ -160,6 +160,38 @@ export async function getDocumentByBaseId({ baseId }) {
 }
 
 // 更新文档
+// export async function updateDocument({ id, title, baseId, ownerId, rootDocId, content,
+//       adminIds, readaUserIds, editaUserIds, valid }) {
+//   const documentData = {
+//     title,
+//     baseId: new ObjectId(baseId),
+//     // ownerId,
+//     // rootDocId,
+//     content,
+//     adminIds: adminIds ? adminIds.map(id => new ObjectId(id)) : undefined,
+//     readaUserIds: readaUserIds ? readaUserIds.map(id => new ObjectId(id)) : undefined,
+//     editaUserIds: editaUserIds ? editaUserIds.map(id => new ObjectId(id)) : undefined,
+//     valid,
+//     updateTime: new Date(),
+//   };
+
+//   // 如果有传入的字段为 undefined，则不更新该字段
+//   Object.keys(documentData).forEach((key) => {
+//     if (documentData[key] === undefined) {
+//       delete documentData[key];
+//     }
+//   });
+
+//   const result = await db.collection('docs').updateOne(
+//     { _id: new ObjectId(id), valid: 1 },
+//     { $set: documentData }
+//   );
+//   console.log(result);
+  
+//   return result;
+// }
+
+// 更新文档，重新写一个
 export async function updateDocument({ id, title, baseId, ownerId, rootDocId, content,
       adminIds, readaUserIds, editaUserIds, valid }) {
   const documentData = {
@@ -175,12 +207,12 @@ export async function updateDocument({ id, title, baseId, ownerId, rootDocId, co
     updateTime: new Date(),
   };
 
-  // 如果有传入的字段为 undefined，则不更新该字段
-  Object.keys(documentData).forEach((key) => {
-    if (documentData[key] === undefined) {
-      delete documentData[key];
-    }
-  });
+  // // 如果有传入的字段为 undefined，则不更新该字段
+  // Object.keys(documentData).forEach((key) => {
+  //   if (documentData[key] === undefined) {
+  //     delete documentData[key];
+  //   }
+  // });
 
   const result = await db.collection('docs').updateOne(
     { _id: new ObjectId(id), valid: 1 },

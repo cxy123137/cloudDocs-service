@@ -133,7 +133,6 @@ export async function handleApplyFriend(userId, friendId, handleType) {
       applyfriends: new ObjectId(userId),
     },
   };
-  };
 
   if (handleType === 'accept') {
     updateFields.$addToSet = {

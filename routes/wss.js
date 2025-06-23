@@ -13,9 +13,11 @@ const { db } = await connectToDatabase();
 
 // 哈希表维护每个房间的ydoc
 const docsMap = new Map();
+// 哈希表维护每个房间的连接列表
+const clientsMap = new Map();
 
 export async function setupWSServer() {
-  const wss = new WebSocketServer({ port: wsPort,  maxPayload: 10 * 1024 * 1024, perMessageDeflate: false })
+  const wss = new WebSocketServer({ port: wsPort, maxPayload: 10 * 1024 * 1024, perMessageDeflate: false });
 
   wss.on('connection', async (conn, req) => {
     const parts = req.url.split('/');
@@ -52,16 +54,25 @@ export async function setupWSServer() {
       docsMap.set(docId, ydoc);
     }
 
-    // 建立连接
+    // 获取或创建连接列表
+    let clients = clientsMap.get(docId);
+    if (!clients) {
+      clients = new Set();
+      clientsMap.set(docId, clients);
+    }
+
+    // 将当前连接添加到连接列表
+    clients.add(conn);
+
+    // 建立连接（禁用自动广播）
     setupWSConnection(conn, req, { 
       roomName: docId, 
       doc: ydoc,
+      disableBc: true // 禁用自动广播
     });
 
     // 手动处理接收到的消息
     conn.on('message', async (message) => {
-    //   console.log('接收到消息:', message);
-
       // 确保消息是ArrayBuffer
       if (message instanceof ArrayBuffer) {
         // 将ArrayBuffer转换为Uint8Array
@@ -71,7 +82,6 @@ export async function setupWSServer() {
         try {
           // 应用更新到ydoc
           Y.applyUpdate(ydoc, update);
-        //   safeApplyUpdate(ydoc, update);
         } catch (err) {
           console.error('处理消息失败:', err);
         }
@@ -87,6 +97,18 @@ export async function setupWSServer() {
         docId
       });
 
+      // 获取连接列表
+      const clients = clientsMap.get(docId);
+      if (clients) {
+        // 广播更新到所有连接的客户端
+        for (const client of clients) {
+          if (client.readyState === WebSocketServer.OPEN) {
+            client.send(update);
+            console.log('广播更新成功:', docId);
+          }
+        }
+      }
+
       try {
         await db.collection('docs').updateOne(
           { _id: new ObjectId(docId) },
@@ -101,6 +123,18 @@ export async function setupWSServer() {
         console.log(`文档 ${docId} 持久化成功`);
       } catch (err) {
         console.error('持久化失败:', err);
+      }
+    });
+
+    // 处理客户端断开连接
+    conn.on('close', () => {
+      const clients = clientsMap.get(docId);
+      if (clients) {
+        clients.delete(conn);
+        if (clients.size === 0) {
+          clientsMap.delete(docId);
+          docsMap.delete(docId);
+        }
       }
     });
 
@@ -132,3 +166,4 @@ function safeApplyUpdate(ydoc, potentialUpdate) {
   // 最终应用
   return Y.applyUpdate(ydoc, potentialUpdate);
 }
+

@@ -119,11 +119,13 @@ export async function addFriend(userId, friendId) {
 
 // 处理好友申请
 export async function handleApplyFriend(userId, friendId, handleType) {
+  // 加到我的朋友列表里
   const updateMyFriends = {
     $addToSet: {
       friends: new ObjectId(friendId),
     },
   };
+  // 从被申请人的申请列表移除，且加入他的朋友列表
   const updateStrangerFriends = {
     $addToSet: {
       friends: new ObjectId(userId),
@@ -138,8 +140,11 @@ export async function handleApplyFriend(userId, friendId, handleType) {
       friends: new ObjectId(friendId),
     };
   }
-  const result = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, updateFields);
-  return result;
+
+  const result1 = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, updateMyFriends);
+  const result2 = await db.collection('users').updateOne({ _id: new ObjectId(friendId), valid: 1 }, updateStrangerFriends);
+
+  return { result1, result2 };
 }
 
 // 删除好友

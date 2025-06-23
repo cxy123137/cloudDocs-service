@@ -52,7 +52,7 @@ documentsrouter.get('/getRecentlyDoc', async (req, res) => {
   }
 });
 
-// 根据 baseId 查询文档列表
+// 根据 查baseId 询文档列表
 documentsrouter.get('/getDocByBaseId', async (req, res) => {
   try {
     const { baseId } = req.query;

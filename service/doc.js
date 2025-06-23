@@ -185,12 +185,10 @@ export async function updateDocument({ id, title, baseId, rootDocId, content,
     }
   });
 
-  const result = await performDatabaseOperation(
-    db.collection('docs').updateOne(
+  const result = await db.collection('docs').updateOne(
       { _id: new ObjectId(id), valid: 1 },
       { $set: documentData }
-    )
-  );
+    );
   return result;
 }
 

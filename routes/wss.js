@@ -36,7 +36,7 @@ export async function setupWSServer() {
       const ytext = ydoc.getText('quill'); // 确保类型名称与前端一致
 
       const testdoc = await getDocument({ docId, userId });
-      console.log("数据库数据", new Uint8Array(testdoc.ydocState));
+      console.log("数据库数据", new Uint8Array(testdoc.ydocState.buffer));
       
 
       // 加载历史数据（如果有）
@@ -44,7 +44,7 @@ export async function setupWSServer() {
         console.log("是否有历史数据");
         
         const doc = await getDocument({ docId, userId });
-        Y.applyUpdate(ydoc, new Uint8Array(doc.ydocState));        
+        Y.applyUpdate(ydoc, new Uint8Array(doc.ydocState.buffer));        
       } catch (e) {
         console.error('加载历史数据失败:', e);
       }
@@ -61,7 +61,7 @@ export async function setupWSServer() {
 
     // 手动处理接收到的消息
     conn.on('message', async (message) => {
-      console.log('接收到消息:', message);
+    //   console.log('接收到消息:', message);
 
       // 确保消息是ArrayBuffer
       if (message instanceof ArrayBuffer) {

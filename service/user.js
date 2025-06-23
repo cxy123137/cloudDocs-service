@@ -1,7 +1,6 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
 import { addKnowledgeBase } from './knowledgeBase.js';
-import { use } from 'react';
 
 const { db } = await connectToDatabase();
 

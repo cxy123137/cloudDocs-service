@@ -78,7 +78,7 @@ documentsrouter.put('/updateDoc/:id', async (req, res) => {
       adminIds,
       readaUserIds,
       editaUserIds,
-      valid,
+      valid
     });
     if (result.matchedCount === 1) {
       res.status(200).json({ code: 200, message: '文档更新成功' });

@@ -156,49 +156,20 @@ export async function getDocumentByRecentlyUserId({ userId }) {
 
 // 根据 baseId 查询文档
 export async function getDocumentByBaseId({ baseId }) {
-  return await db.collection('docs').find({ baseId: new ObjectId(baseId), valid: 1 }).toArray()
+  const result = await db.collection('docs').find({ baseId: new ObjectId(baseId), valid: 1 }).toArray();
+  console.log(result);
+  
+  return result;
 }
 
 // 更新文档
-// export async function updateDocument({ id, title, baseId, ownerId, rootDocId, content,
-//       adminIds, readaUserIds, editaUserIds, valid }) {
-//   const documentData = {
-//     title,
-//     baseId: new ObjectId(baseId),
-//     // ownerId,
-//     // rootDocId,
-//     content,
-//     adminIds: adminIds ? adminIds.map(id => new ObjectId(id)) : undefined,
-//     readaUserIds: readaUserIds ? readaUserIds.map(id => new ObjectId(id)) : undefined,
-//     editaUserIds: editaUserIds ? editaUserIds.map(id => new ObjectId(id)) : undefined,
-//     valid,
-//     updateTime: new Date(),
-//   };
-
-//   // 如果有传入的字段为 undefined，则不更新该字段
-//   Object.keys(documentData).forEach((key) => {
-//     if (documentData[key] === undefined) {
-//       delete documentData[key];
-//     }
-//   });
-
-//   const result = await db.collection('docs').updateOne(
-//     { _id: new ObjectId(id), valid: 1 },
-//     { $set: documentData }
-//   );
-//   console.log(result);
-  
-//   return result;
-// }
-
-// 更新文档，重新写一个
 export async function updateDocument({ id, title, baseId, ownerId, rootDocId, content,
       adminIds, readaUserIds, editaUserIds, valid }) {
   const documentData = {
     title,
     baseId: new ObjectId(baseId),
-    // ownerId,
-    // rootDocId,
+    ownerId,
+    rootDocId,
     content,
     adminIds: adminIds ? adminIds.map(id => new ObjectId(id)) : undefined,
     readaUserIds: readaUserIds ? readaUserIds.map(id => new ObjectId(id)) : undefined,
@@ -207,18 +178,20 @@ export async function updateDocument({ id, title, baseId, ownerId, rootDocId, co
     updateTime: new Date(),
   };
 
-  // // 如果有传入的字段为 undefined，则不更新该字段
-  // Object.keys(documentData).forEach((key) => {
-  //   if (documentData[key] === undefined) {
-  //     delete documentData[key];
-  //   }
-  // });
+  // 如果有传入的字段为 undefined，则不更新该字段
+  Object.keys(documentData).forEach((key) => {
+    if (documentData[key] === undefined) {
+      delete documentData[key];
+    }
+  });
 
   const result = await db.collection('docs').updateOne(
     { _id: new ObjectId(id), valid: 1 },
     { $set: documentData }
   );
-  console.log(result);
+  
+
+  console.log(getDocumentByBaseId({ baseId }));
   
   return result;
 }

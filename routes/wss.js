@@ -15,7 +15,7 @@ const { db } = await connectToDatabase();
 const docsMap = new Map();
 
 export async function setupWSServer() {
-  const wss = new WebSocketServer({ port: wsPort });
+  const wss = new WebSocketServer({ port: wsPort,  maxPayload: 10 * 1024 * 1024, perMessageDeflate: false })
 
   wss.on('connection', async (conn, req) => {
     const parts = req.url.split('/');
@@ -38,9 +38,7 @@ export async function setupWSServer() {
       // 加载历史数据（如果有）
       try {
         const doc = await getDocument({ docId, userId });
-        if (doc?.ydocState?.buffer) {
-          Y.applyUpdate(ydoc, new Uint8Array(doc.ydocState.buffer));
-        }
+        Y.applyUpdate(ydoc, new Uint8Array(doc.ydocState));
       } catch (e) {
         console.error('加载历史数据失败:', e);
       }
@@ -62,8 +60,9 @@ export async function setupWSServer() {
       // 确保消息是ArrayBuffer
       if (message instanceof ArrayBuffer) {
         // 将ArrayBuffer转换为Uint8Array
-        const update = new Uint8Array(message);
-
+        const update = new Uint8Array(message).subarray(3);
+        console.log("后端二进制", update);
+        
         try {
           // 应用更新到ydoc
         //   Y.applyUpdate(ydoc, update);

@@ -10,9 +10,6 @@ const loginRouter = express.Router();
 const { db } = await connectToDatabase();
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
-// 中间件，AsyncLocalStorage需要提前初始化run()一块区域
-loginRouter.use(setContext);
-
 // 登录接口
 loginRouter.post('/login', async (req, res) => {
   const username = req.body.username;

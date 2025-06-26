@@ -1,12 +1,16 @@
 // 路由配置文件
 import { knowledgeBaseRouter } from '../routes/knowledgeBase.js';
-import { documentsrouter } from '../routes/doc.js';
+import { documentsRouter } from '../routes/doc.js';
 import { userRouter } from '../routes/user.js';
 import { loginRouter } from '../routes/login.js';
+import { docVersionsRouter } from '../routes/docVersion.js';
+import { permissionRouter } from '../routes/permission.js';
 
 export default function (app) {
   app.use('/knowledgeBase', knowledgeBaseRouter);
-  app.use('/document', documentsrouter);
+  app.use('/document', documentsRouter);
   app.use('/user', userRouter);
   app.use('/login', loginRouter);
+  app.use('/docVersion', docVersionsRouter);
+  app.use('/permission', permissionRouter);
 }

@@ -1,0 +1,45 @@
+import { connectToDatabase } from '../db.js';
+import { ObjectId } from 'mongodb';
+
+// 连接到数据库
+const { db } = await connectToDatabase();
+
+// 新增版本
+export async function addDocVersion({ docId }) {
+  // 先保存一次文档
+  const doc = await db.collection('docs').findOne({ _id: new ObjectId(docId), valid: 1 });
+  if (!doc) {
+    throw new Error('文档不存在或已删除');
+  }
+  const newVersion = {
+    _id: new ObjectId(),
+    rootDocId: doc._id,
+    version: doc.version + 1,
+    content: doc.content,
+    createTime: new Date(),
+  };
+  // 更新文档版本号
+  updateDocument({ id: docId, version: newVersion.version });
+  const result = await db.collection('docVersions').insertOne(newVersion);
+  return result;
+}
+
+// 查询版本列表，根据版本号倒序
+export async function getDocVersions({ docId }) {
+  const result = await db.collection('docVersions')
+  .find({ rootDocId: new ObjectId(docId) })
+  .sort({ version: -1 }).toArray();
+  return result;
+}
+
+// 查询版本内容
+export async function getDocVersionContent({ docVersionId }) {
+  const result = await db.collection('docVersions').findOne({ _id: new ObjectId(docVersionId) });
+  return result;
+}
+
+// 删除版本（真删），版本号不可逆
+export async function deleteDocVersion({ docVersionId }) {
+  const result = await db.collection('docVersions').deleteOne({ _id: new ObjectId(docVersionId) });
+  return result;
+}

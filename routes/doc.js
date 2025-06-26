@@ -1,23 +1,20 @@
 import express from 'express';
-import { addDocument, getDocument, getDocumentByBaseId, updateDocument, deleteDocument, getDocumentByRecentlyUserId } from '../service/doc.js';
-import { getContext } from '../context/context.js';
+import { addDocument, getDocument, getDocumentByBaseId, updateDocument, 
+  deleteDocument, getDocumentByRecentlyUserId, getDocsByPermission } from '../service/doc.js';
+import { getDocPermissionCode } from '../service/permission.js';
 
-const documentsrouter = express.Router();
+const documentsRouter = express.Router();
 
 // 新建文档
-documentsrouter.post('/addDoc', async (req, res) => {
+documentsRouter.post('/addDoc', async (req, res) => {
   try {
-    const { title, baseId, rootDocId, content, ownerId, adminIds, readaUserIds, editaUserIds, valid } = req.body;
+    const { title, baseId, content, ownerId, valid } = req.body;
     console.log(req.body);
     const result = await addDocument({
       title,
       baseId,
-      // rootDocId,
       content,
-      // ownerId,
-      adminIds,
-      readaUserIds,
-      editaUserIds,
+      ownerId,
       valid,
     });
     console.log(result);
@@ -29,11 +26,12 @@ documentsrouter.post('/addDoc', async (req, res) => {
 });
 
 // 查询文档
-documentsrouter.get('/getDoc', async (req, res) => {
+documentsRouter.get('/getDoc', async (req, res) => {
   try {
     const { userId, docId } = req.query;
-    const docs = await getDocument({ docId, userId });
-    res.status(200).json(docs);
+    const doc = await getDocument({ docId, userId });
+    const permissionCode = await getDocPermissionCode(docId, userId);
+    res.status(200).json({ code: 200, message: '查询成功', data: doc, permissionCode: permissionCode });
   } catch (error) {
     console.log(error);
     res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: error.message });
@@ -41,7 +39,7 @@ documentsrouter.get('/getDoc', async (req, res) => {
 });
 
 // 查询用户最近访问文档
-documentsrouter.get('/getRecentlyDoc', async (req, res) => {
+documentsRouter.get('/getRecentlyDoc', async (req, res) => {
   try {
     const userId = req.query.userId;
     const docs = await getDocumentByRecentlyUserId({ userId })
@@ -52,8 +50,8 @@ documentsrouter.get('/getRecentlyDoc', async (req, res) => {
   }
 });
 
-// 根据 查baseId 询文档列表
-documentsrouter.get('/getDocByBaseId', async (req, res) => {
+// 根据 baseId 查询文档列表
+documentsRouter.get('/getDocByBaseId', async (req, res) => {
   try {
     const { baseId } = req.query;
     const docs = await getDocumentByBaseId({ baseId });
@@ -64,20 +62,28 @@ documentsrouter.get('/getDocByBaseId', async (req, res) => {
   }
 });
 
+// 查询与我共享栏的文档列表（仅共享，不包括自建文档）
+documentsRouter.get('/getSharedDocs', async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    const docs = await getDocsByPermission(userId);
+    res.status(200).json({ code: 200, message: '查询成功', data: docs });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: err.message });
+  }
+});
+
 // 更新文档数据
-documentsrouter.put('/updateDoc/:id', async (req, res) => {
+documentsRouter.put('/updateDoc/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, baseId, rootDocId, content, adminIds, readaUserIds, editaUserIds, valid } = req.body;
+    const { title, baseId, content, valid } = req.body;
     const result = await updateDocument({
       id,
       title,
       baseId,
-      rootDocId,
       content,
-      adminIds,
-      readaUserIds,
-      editaUserIds,
       valid
     });
     if (result.matchedCount === 1) {
@@ -91,7 +97,7 @@ documentsrouter.put('/updateDoc/:id', async (req, res) => {
 });
 
 // 删除文档
-documentsrouter.delete('/delete/:id', async (req, res) => {
+documentsRouter.delete('/delete/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await deleteDocument({ id });
@@ -105,4 +111,4 @@ documentsrouter.delete('/delete/:id', async (req, res) => {
   }
 });
 
-export { documentsrouter };
+export { documentsRouter };

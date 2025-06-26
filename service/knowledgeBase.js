@@ -4,16 +4,12 @@ import { ObjectId } from 'mongodb';
 const { db } = await connectToDatabase();
 
 // 添加知识库（单个）
-export async function addKnowledgeBase(baseName, baseDesc, ownerId, adminIds = [], readaUserIds = [], editaUserIds = [], docs = []) {
+export async function addKnowledgeBase(baseName, baseDesc, ownerId) {
   const knowledgeBaseData = {
     _id: new ObjectId(),
     baseName,
     baseDesc,
-    ownerId: new ObjectId(ownerId),
-    adminIds: adminIds.map(id => new ObjectId(id)),
-    readaUserIds: readaUserIds.map(id => new ObjectId(id)),
-    editaUserIds: editaUserIds.map(id => new ObjectId(id)),
-    docs,
+    ownerId: ObjectId(ownerId),
     valid: 1, // 默认为1，表示有效
     createTime: new Date(),
     updateTime: new Date(),
@@ -40,28 +36,24 @@ export async function getDefaultKnowledgeBaseIdByUserId(userId) {
   return defaultKnowledgeBase._id;
 }
 
-// 根据userId，查询用户名下的所有知识库
+// 改成，根据userId，查询用户名下的所有知识库，并查询所有有权限的知识库
 export async function getKnowledgeBaseByUserId(userId) {
+  const permissions = await db.collection('permissions').find({ userId: new ObjectId(userId) }).toArray();
   const knowledgeBases = await db.collection('knowledgeBases').find({
     $or: [
-      { ownerId: new ObjectId(userId) },
-      { adminIds: new ObjectId(userId) },
-      { readaUserIds: new ObjectId(userId) },
-      { editaUserIds: new ObjectId(userId) }
+      { ownerId: ObjectId(userId) },
+      { _id: { $in: permissions.map(permission => permission.baseId) } }
     ],
     valid: 1
   }).toArray();
   return knowledgeBases;
 }
 
-export async function updateKnowledgeBase(id, baseName, baseDesc, adminIds, readaUserIds, editaUserIds, docs, valid) {
+// 编辑知识库
+export async function updateKnowledgeBase(id, baseName, baseDesc, valid) {
   const knowledgeBaseData = {
     baseName,
     baseDesc,
-    adminIds: adminIds ? adminIds.map(id => new ObjectId(id)) : undefined,
-    readaUserIds: readaUserIds ? readaUserIds.map(id => new ObjectId(id)) : undefined,
-    editaUserIds: editaUserIds ? editaUserIds.map(id => new ObjectId(id)) : undefined,
-    docs,
     valid,
     updateTime: new Date(),
   };
@@ -73,7 +65,7 @@ export async function updateKnowledgeBase(id, baseName, baseDesc, adminIds, read
     }
   });
 
-  const result = await db.collection('knowledgeBases').updateOne({ _id: new ObjectId(id), valid: 1 }, { $set: knowledgeBaseData });
+  const result = await db.collection('knowledgeBases').updateOne({ _id: ObjectId(id), valid: 1 }, { $set: knowledgeBaseData });
   return result;
 }
 

@@ -118,7 +118,7 @@ export async function addFriend(userId, friendId) {
 }
 
 // 处理好友申请
-export async function handleApplyFriend(userId, friendId, handleType) {
+export async function handleApplyFriend(userId, friendId) {
   // 加到我的朋友列表里
   const updateMyFriends = {
     $addToSet: {
@@ -149,17 +149,18 @@ export async function handleApplyFriend(userId, friendId, handleType) {
 
 // 删除好友
 export async function deleteFriend(userId, friendId) {
-  const updateFields = {
+  const myUpdate = {
     $pull: {
       friends: new ObjectId(friendId),
     },
   };
-  const result = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, updateFields);
-  return result;
+  const result1 = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, myUpdate);
+  
+  const friendUpdate = {
+    $pull: {
+      friends: new ObjectId(userId),
+    },
+  };
+  const result2 = await db.collection('users').updateOne({ _id: new ObjectId(friendId), valid: 1 }, friendUpdate);
+  return { result1, result2 };
 }
-
-
-
-// 添加好友申请
-// 处理好友申请
-// 删除好友

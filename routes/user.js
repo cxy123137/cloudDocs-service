@@ -1,5 +1,6 @@
 import express from 'express';
-import { addUser, getUser, updateUser, deleteUser, getStrangerByName } from '../service/user.js';
+import { addUser, getUser, updateUser, deleteUser, getStrangerByName, getFriends, 
+  getApplyFriends, addFriend, handleApplyFriend, deleteFriend } from '../service/user.js';
 
 const userRouter = express.Router();
 
@@ -104,7 +105,7 @@ userRouter.get('/getApplyFriends', async (req, res) => {
 // 添加好友
 userRouter.post('/addFriend', async (req, res) => {
   try {
-    const { userId, friendId } = req.body;
+    const { userId, friendId } = req.query;
     const result = await addFriend(userId, friendId);
     if (result.matchedCount === 0) {
       return res.status(404).json({ code: 404, message: "用户未找到" });
@@ -118,9 +119,9 @@ userRouter.post('/addFriend', async (req, res) => {
 // 处理好友申请
 userRouter.put('/handleApplyFriend', async (req, res) => {
   try {
-    const { userId, friendId, handleType } = req.body;
-    const result = await handleApplyFriend(userId, friendId, handleType);
-    if (result.matchedCount === 0) {
+    const { userId, friendId } = req.query;
+    const result = await handleApplyFriend(userId, friendId);
+    if (result.result1.matchedCount === 0 || result.result2.matchedCount === 0) {
       return res.status(404).json({ code: 404, message: "用户未找到" });
     }
     res.status(200).json({ code: 200, message: "处理好友申请成功" });
@@ -132,9 +133,9 @@ userRouter.put('/handleApplyFriend', async (req, res) => {
 // 删除好友
 userRouter.delete('/deleteFriend', async (req, res) => {
   try {
-    const { userId, friendId } = req.body;
+    const { userId, friendId } = req.query;
     const result = await deleteFriend(userId, friendId);
-    if (result.matchedCount === 0) {
+    if (result.result1.matchedCount === 0 || result.result2.matchedCount === 0) {
       return res.status(404).json({ code: 404, message: "用户未找到" });
     }
     res.status(200).json({ code: 200, message: "删除好友成功" });

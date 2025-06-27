@@ -9,7 +9,7 @@ export async function addKnowledgeBase(baseName, baseDesc, ownerId) {
     _id: new ObjectId(),
     baseName,
     baseDesc,
-    ownerId: ObjectId(ownerId),
+    ownerId: new ObjectId(ownerId),
     valid: 1, // 默认为1，表示有效
     createTime: new Date(),
     updateTime: new Date(),
@@ -41,7 +41,7 @@ export async function getKnowledgeBaseByUserId(userId) {
   const permissions = await db.collection('permissions').find({ userId: new ObjectId(userId) }).toArray();
   const knowledgeBases = await db.collection('knowledgeBases').find({
     $or: [
-      { ownerId: ObjectId(userId) },
+      { ownerId: new ObjectId(userId) },
       { _id: { $in: permissions.map(permission => permission.baseId) } }
     ],
     valid: 1
@@ -65,7 +65,7 @@ export async function updateKnowledgeBase(id, baseName, baseDesc, valid) {
     }
   });
 
-  const result = await db.collection('knowledgeBases').updateOne({ _id: ObjectId(id), valid: 1 }, { $set: knowledgeBaseData });
+  const result = await db.collection('knowledgeBases').updateOne({ _id: new ObjectId(id), valid: 1 }, { $set: knowledgeBaseData });
   return result;
 }
 

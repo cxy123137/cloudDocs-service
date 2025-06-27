@@ -54,6 +54,8 @@ documentsRouter.get('/getRecentlyDoc', async (req, res) => {
 documentsRouter.get('/getDocByBaseId', async (req, res) => {
   try {
     const { baseId } = req.query;
+    console.log(baseId);
+    
     const docs = await getDocumentByBaseId({ baseId });
     res.status(200).json({ code: 200, message: '查询成功', data: docs });
   } catch (err) {

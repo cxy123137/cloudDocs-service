@@ -4,10 +4,10 @@ import { addDocVersion, getDocVersions, getDocVersionContent, deleteDocVersion }
 const docVersionsRouter = express.Router();
 
 // 新增版本，根据最新文档来存储的，所以调用前必须先保存一次文档
-docVersionsRouter.post('/addDocVersion/:docId', async (req, res) => {
+docVersionsRouter.post('/addDocVersion', async (req, res) => {
   try {
-    const { docId } = req.params;
-    const result = await addDocVersion({ docId });
+    const { docId, title, baseId, ownerId, content, valid } = req.query;
+    const result = await addDocVersion({ docId, title, baseId, ownerId, content, valid });
     res.status(201).json({ code: 201, message: '文档版本新建成功', insertedId: result.insertedId });
   } catch (err) {
     res.status(500).json({ code: 500, message: '服务器错误，请稍后再试', error: err.message });

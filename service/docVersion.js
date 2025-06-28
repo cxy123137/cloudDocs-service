@@ -6,9 +6,11 @@ import { updateDocument } from './doc.js';
 const { db } = await connectToDatabase();
 
 // 新增版本
-export async function addDocVersion({ docId }) {
-  // 先保存一次文档
+export async function addDocVersion({ docId, title, baseId, ownerId, content, valid }) {
+  // 根据文档ID查询文档（获取版本号）
   const doc = await db.collection('docs').findOne({ _id: new ObjectId(docId), valid: 1 });
+  // 保存一次文档，并且更新文档版本号
+  updateDocument({ id: docId, title, baseId, ownerId, content, version: doc.version + 1, valid });
   if (!doc) {
     throw new Error('文档不存在或已删除');
   }
@@ -20,8 +22,6 @@ export async function addDocVersion({ docId }) {
     ownerId: doc.ownerId,
     createTime: new Date(),
   };
-  // 更新文档版本号
-  updateDocument({ id: docId, version: newVersion.version });
   const result = await db.collection('docVersions').insertOne(newVersion);
   return result;
 }

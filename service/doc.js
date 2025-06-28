@@ -1,8 +1,28 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
+import { generateSummary, deleteSummary } from './summary.js';
 
 // 连接到数据库
 const { db } = await connectToDatabase();
+
+function safeObjectId(id) {
+  console.log('doc safeObjectId收到参数:', id, '类型:', typeof id);
+  
+  // 检查参数是否存在
+  if (!id) {
+    throw new Error('ObjectId参数不能为空');
+  }
+  
+  // 如果已经是ObjectId对象，直接返回
+  if (id.constructor.name === 'ObjectId') {
+    return id;
+  }
+  
+  if (typeof id !== 'string' || id.length !== 24 || !/^[a-fA-F0-9]{24}$/.test(id)) {
+    throw new Error('ObjectId参数必须为24位hex字符串或ObjectId对象');
+  }
+  return new ObjectId(id);
+}
 
 // 通用的数据库操作辅助函数
 async function performDatabaseOperation(operation) {
@@ -20,7 +40,7 @@ export async function addDocument({title = "未命名文档", baseId, ownerId, c
   const newDoc = {
     _id: new ObjectId(),
     title,
-    baseId: new ObjectId(baseId),
+    baseId: safeObjectId(baseId),
     ownerId,
     content,
     version: 0,
@@ -30,39 +50,51 @@ export async function addDocument({title = "未命名文档", baseId, ownerId, c
     updateTime: new Date(),
   };
   const result = await db.collection('docs').insertOne(newDoc);
+  
+  // 异步生成摘要，不阻塞文档创建
+  if (result.insertedId) {
+    generateSummary(result.insertedId.toString(), content).catch(error => {
+      console.error('自动生成摘要失败:', error);
+    });
+  }
+  
   return result;
 }
 
 // 访问文档（维护访客记录功能）
 export async function getDocument({ docId, userId }) {
-  // 每次访问文档时，更新最近访问时间 & 最近访问用户
-  // 1. 查询该用户是否已在 recentlyOpen 数组中：如果有，更新访问时间，否则 push 新记录
-  const doc = await db.collection('docs').findOne({
-    _id: ObjectId(docId),
-    valid: 1,
-    'recentlyOpen.recentlyOpenUserId': new ObjectId(userId)
-  });
+  const query = {
+    _id: safeObjectId(docId),
+    valid: 1
+  };
+  
+  // 只有userId合法时才加recentlyOpen条件
+  if (userId && typeof userId === 'string' && userId.length === 24 && /^[a-fA-F0-9]{24}$/.test(userId)) {
+    query['recentlyOpen.recentlyOpenUserId'] = safeObjectId(userId);
+  }
+  
+  const doc = await db.collection('docs').findOne(query);
 
-  if (doc) {
+  if (doc && userId && typeof userId === 'string' && userId.length === 24 && /^[a-fA-F0-9]{24}$/.test(userId)) {
     // 用户已存在，更新访问时间
     await db.collection('docs').updateOne(
       {
-        _id: ObjectId(docId),
+        _id: safeObjectId(docId),
         valid: 1,
-        'recentlyOpen.recentlyOpenUserId': new ObjectId(userId)
+        'recentlyOpen.recentlyOpenUserId': safeObjectId(userId)
       },
       {
         $set: { 'recentlyOpen.$.recentlyOpenTime': new Date() }
       }
     );
-  } else {
+  } else if (userId && typeof userId === 'string' && userId.length === 24 && /^[a-fA-F0-9]{24}$/.test(userId)) {
     // 用户不存在访问记录，push 新记录
     await db.collection('docs').updateOne(
-      { _id: ObjectId(docId), valid: 1 },
+      { _id: safeObjectId(docId), valid: 1 },
       {
         $push: {
           recentlyOpen: {
-            recentlyOpenUserId: new ObjectId(userId),
+            recentlyOpenUserId: safeObjectId(userId),
             recentlyOpenTime: new Date()
           }
         }
@@ -73,7 +105,7 @@ export async function getDocument({ docId, userId }) {
   // 懒删除，更改完最近访问用户的信息后，检查内部是否有过期的访客记录，并删除
   await db.collection('docs').updateOne(
     { 
-      _id: ObjectId(docId),
+      _id: safeObjectId(docId),
       valid: 1,
     },
     {
@@ -89,7 +121,7 @@ export async function getDocument({ docId, userId }) {
   );
 
   // 查询文档
-  return await db.collection('docs').findOne({ _id: ObjectId(docId), valid: 1 })
+  return await db.collection('docs').findOne({ _id: safeObjectId(docId), valid: 1 })
 }
 
 // 查询用户最近访问的文档列表
@@ -99,7 +131,7 @@ export async function getDocumentByRecentlyUserId({ userId }) {
     db.collection('docs').aggregate([
       {
         $match: {
-          "recentlyOpen.recentlyOpenUserId": new ObjectId(userId),
+          "recentlyOpen.recentlyOpenUserId": safeObjectId(userId),
           valid: 1
         }
       },
@@ -145,6 +177,11 @@ export async function getDocumentByRecentlyUserId({ userId }) {
         $project: {
           "baseInfo": 0
         }
+      },
+      {
+        $sort: {
+          "recentlyOpen.recentlyOpenTime": -1  // 按最近访问时间倒序排列
+        }
       }
     ]).toArray()
   );
@@ -152,14 +189,14 @@ export async function getDocumentByRecentlyUserId({ userId }) {
 
 // 根据 baseId 查询知识库中的文档列表（左侧栏）
 export async function getDocumentByBaseId({ baseId }) {
-  const result = await db.collection('docs').find({ baseId: ObjectId(baseId), valid: 1 }).toArray();
+  const result = await db.collection('docs').find({ baseId: safeObjectId(baseId), valid: 1 }).toArray();
   
   return result;
 }
 
 // 获取用户的有权限的所有文档列表（与我共享栏）（不包括用户自建，因为这些都存在于默认知识库，左侧栏）
 export async function getDocsByPermission(userId) {
-  const permissions = await db.collection('docPermissions').find({ userId: ObjectId(userId) }).toArray();
+  const permissions = await db.collection('docPermissions').find({ userId: safeObjectId(userId) }).toArray();
   const docs = await db.collection('docs').find({ _id: { $in: permissions.map(item => item.docId) }}).toArray();
   return docs;
 }
@@ -168,7 +205,7 @@ export async function getDocsByPermission(userId) {
 export async function updateDocument({ id, title, baseId, ownerId, content, version, valid }) {
   const documentData = {
     title,
-    baseId: baseId ? new ObjectId(baseId) : undefined,
+    baseId: baseId ? safeObjectId(baseId) : undefined,
     ownerId,
     content,
     version,
@@ -185,9 +222,16 @@ export async function updateDocument({ id, title, baseId, ownerId, content, vers
   });
 
   const result = await db.collection('docs').updateOne(
-    { _id: ObjectId(id), valid: 1 },
+    { _id: safeObjectId(id), valid: 1 },
     { $set: documentData }
   );
+  
+  // 如果更新成功且内容有变化，异步更新摘要
+  if (result.matchedCount === 1 && content !== undefined) {
+    generateSummary(id, content).catch(error => {
+      console.error('自动更新摘要失败:', error);
+    });
+  }
   
   return result;
 }
@@ -195,7 +239,18 @@ export async function updateDocument({ id, title, baseId, ownerId, content, vers
 // 删除文档
 export async function deleteDocument(id) {
   const result = await performDatabaseOperation(
-    db.collection('docs').deleteOne({ _id: ObjectId(id), valid: 1 })
+    db.collection('docs').updateOne(
+      { _id: safeObjectId(id), valid: 1 },
+      { $set: { valid: 0, updateTime: new Date() } }
+    )
   );
+  
+  // 删除文档时同时删除摘要
+  if (result.modifiedCount === 1) {
+    deleteSummary(id).catch(error => {
+      console.error('删除摘要失败:', error);
+    });
+  }
+  
   return result;
 }

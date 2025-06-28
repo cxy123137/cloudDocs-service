@@ -1,76 +1,108 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
 
-const { db } = await connectToDatabase();
-
-// 添加知识库（单个）
-export async function addKnowledgeBase(baseName, baseDesc, ownerId) {
-  const knowledgeBaseData = {
-    _id: new ObjectId(),
-    baseName,
-    baseDesc,
-    ownerId: ObjectId(ownerId),
-    valid: 1, // 默认为1，表示有效
-    createTime: new Date(),
-    updateTime: new Date(),
-  };
-  const result = await db.collection('knowledgeBases').insertOne(knowledgeBaseData);
-  return result;
-}
-
-// 根据知识库id，查询知识库信息，只能查询一个或者全部
-export async function getKnowledgeBase(id) {
-  let knowledgeBases;
-  if (id) {
-    knowledgeBases = await db.collection('knowledgeBases').findOne({ _id: new ObjectId(id), valid: 1 });
-  } else {
-    knowledgeBases = await db.collection('knowledgeBases').find({ valid: 1 }).toArray();
-  }
-  return knowledgeBases;
-}
-
-// 登录接口使用，根据用户id查询用户的默认知识库id
-export async function getDefaultKnowledgeBaseIdByUserId(userId) {
-  const defaultKnowledgeBase = await db.collection('knowledgeBases').findOne({ownerId: new ObjectId(userId), valid: 1 });
+// 安全的ObjectId转换函数
+function safeObjectId(id) {
+  console.log('knowledgeBase safeObjectId收到参数:', id, '类型:', typeof id);
   
-  return defaultKnowledgeBase._id;
+  // 检查参数是否存在
+  if (!id) {
+    throw new Error('ObjectId参数不能为空');
+  }
+  
+  // 如果已经是ObjectId对象，直接返回
+  if (id.constructor.name === 'ObjectId') {
+    return id;
+  }
+  
+  // 检查参数类型
+  if (typeof id !== 'string') {
+    throw new Error(`ObjectId参数类型错误，期望string或ObjectId，实际${typeof id}`);
+  }
+  
+  // 检查长度
+  if (id.length !== 24) {
+    throw new Error(`ObjectId长度错误，期望24位，实际${id.length}位`);
+  }
+  
+  // 检查格式
+  if (!/^[a-fA-F0-9]{24}$/.test(id)) {
+    throw new Error(`ObjectId格式错误，必须为24位hex字符串，实际值: ${id}`);
+  }
+  
+  return new ObjectId(id);
 }
 
-// 改成，根据userId，查询用户名下的所有知识库，并查询所有有权限的知识库
-export async function getKnowledgeBaseByUserId(userId) {
-  const permissions = await db.collection('permissions').find({ userId: new ObjectId(userId) }).toArray();
-  const knowledgeBases = await db.collection('knowledgeBases').find({
-    $or: [
-      { ownerId: ObjectId(userId) },
-      { _id: { $in: permissions.map(permission => permission.baseId) } }
-    ],
-    valid: 1
-  }).toArray();
+// 创建知识库
+export const addKnowledgeBase = async (knowledgeBaseData) => {
+const { db } = await connectToDatabase();
+  const { name, ownerId, description } = knowledgeBaseData;
+  const knowledgeBase = {
+    _id: new ObjectId(),
+    baseName: name,
+    ownerId: safeObjectId(ownerId),
+    baseDesc: description,
+    valid: 1,
+    createTime: new Date(),
+    updateTime: new Date()
+  };
+  return await db.collection('knowledgeBases').insertOne(knowledgeBase);
+};
+
+// 根据ID获取知识库
+export const getKnowledgeBase = async (id) => {
+  const { db } = await connectToDatabase();
+  const knowledgeBases = await db.collection('knowledgeBases').findOne({ _id: safeObjectId(id), valid: 1 });
   return knowledgeBases;
-}
+};
 
-// 编辑知识库
-export async function updateKnowledgeBase(id, baseName, baseDesc, valid) {
-  const knowledgeBaseData = {
-    baseName,
-    baseDesc,
-    valid,
-    updateTime: new Date(),
+// 根据用户ID获取知识库列表
+export const getKnowledgeBasesByUserId = async (userId) => {
+  const { db } = await connectToDatabase();
+  
+  // 获取用户拥有的所有知识库
+  const userKnowledgeBases = await db.collection('knowledgeBases').find(
+    { ownerId: safeObjectId(userId), valid: 1 }
+  ).toArray();
+  
+  // 获取用户有权限的知识库
+  const permissions = await db.collection('basePermissions').find({ userId: safeObjectId(userId) }).toArray();
+  const permissionKnowledgeBases = await db.collection('knowledgeBases').find(
+    { _id: { $in: permissions.map(p => p.baseId) }, valid: 1 }
+  ).toArray();
+  
+  // 合并并去重
+  const allKnowledgeBases = [...userKnowledgeBases, ...permissionKnowledgeBases];
+  const uniqueKnowledgeBases = allKnowledgeBases.filter((kb, index, self) => 
+    index === self.findIndex(k => k._id.toString() === kb._id.toString())
+  );
+  
+  return uniqueKnowledgeBases;
+};
+
+// 根据用户ID获取默认知识库ID
+export const getDefaultKnowledgeBaseIdByUserId = async (userId) => {
+  const { db } = await connectToDatabase();
+  const defaultKnowledgeBase = await db.collection('knowledgeBases').findOne({ownerId: safeObjectId(userId), valid: 1 });
+  return defaultKnowledgeBase ? defaultKnowledgeBase._id : null;
   };
 
-  // 如果没有其中的字段有没传入的话，把该字段移除
-  Object.keys(knowledgeBaseData).forEach(key => {
-    if (knowledgeBaseData[key] === undefined) {
-      delete knowledgeBaseData[key];
-    }
-  });
-
-  const result = await db.collection('knowledgeBases').updateOne({ _id: ObjectId(id), valid: 1 }, { $set: knowledgeBaseData });
+// 更新知识库
+export const updateKnowledgeBase = async (id, knowledgeBaseData) => {
+  const { db } = await connectToDatabase();
+  const { name, description } = knowledgeBaseData;
+  const updateData = {
+    baseName: name,
+    baseDesc: description,
+    updateTime: new Date()
+  };
+  const result = await db.collection('knowledgeBases').updateOne({ _id: safeObjectId(id), valid: 1 }, { $set: updateData });
   return result;
-}
+};
 
-// 删除知识库：后续优化为假删
-export async function deleteKnowledgeBase(id) {
-  const result = await db.collection('knowledgeBases').deleteOne({ _id: new ObjectId(id), valid: 1 });
+// 删除知识库
+export const deleteKnowledgeBase = async (id) => {
+  const { db } = await connectToDatabase();
+  const result = await db.collection('knowledgeBases').deleteOne({ _id: safeObjectId(id), valid: 1 });
   return result;
-}
+};

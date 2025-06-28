@@ -3,6 +3,7 @@ import cors from 'cors';
 import router from './router/index.js';
 import jwt from 'jsonwebtoken';
 import { setupWSServer } from './routes/wss.js';
+import { scheduler } from './service/scheduler.js';
 import 'dotenv/config';
 
 const app = express();
@@ -27,11 +28,14 @@ app.use((req, res, next) => {
   }
 
   // 获取Authorization
-  const token = req.headers.authorization;
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
     return res.status(401).send('未携带token，请登录');
   }
 
+  // 处理Bearer token格式
+  const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader;
+  
   // 校验token
   try {
     jwt.verify(token, process.env.JWT_SECRET_KEY);
@@ -45,6 +49,9 @@ app.use((req, res, next) => {
 router(app);
 // WebSocket服务
 await setupWSServer();
+
+// 启动定时任务
+scheduler.start();
 
 // 启动服务器
 app.listen(port, () => {

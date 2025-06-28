@@ -33,7 +33,7 @@ loginRouter.post('/login', async (req, res) => {
     const refreshToken = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '7d' });
 
     res.status(200).json({ 
-      code: 201, 
+      code: 200, 
       message: "登录成功", 
       token: accessToken, 
       refreshToken: refreshToken,

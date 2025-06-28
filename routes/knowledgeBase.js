@@ -1,6 +1,6 @@
 import express from 'express';
 import { addKnowledgeBase, getKnowledgeBase, updateKnowledgeBase, deleteKnowledgeBase,
-   getKnowledgeBaseByUserId } from '../service/knowledgeBase.js';
+   getKnowledgeBasesByUserId } from '../service/knowledgeBase.js';
 import { getBasePermissionCode } from '../service/permission.js';
 const knowledgeBaseRouter = express.Router();
 
@@ -8,7 +8,11 @@ const knowledgeBaseRouter = express.Router();
 knowledgeBaseRouter.post('/addKnowledgeBase', async (req, res) => {
   try {
     const { baseName, baseDesc, ownerId } = req.body;
-    const result = await addKnowledgeBase(baseName, baseDesc, ownerId);
+    const result = await addKnowledgeBase({
+      name: baseName,
+      description: baseDesc,
+      ownerId: ownerId
+    });
     res.status(201).json({ code: 201, message: "知识库创建成功", data: result.insertedId });
   } catch (err) {
     res.status(400).json({ code: 400, message: err.message });
@@ -19,8 +23,20 @@ knowledgeBaseRouter.post('/addKnowledgeBase', async (req, res) => {
 knowledgeBaseRouter.get('/getKnowledgeBase', async (req, res) => {
   try {
     const { id, userId } = req.query;
+    
+    // 参数验证
+    if (!id) {
+      return res.status(400).json({ code: 400, message: '缺少必要参数: id' });
+    }
+    
     const knowledgeBases = await getKnowledgeBase(id);
-    const permissionCode = await getBasePermissionCode(id, userId);
+    
+    // 只有在提供userId时才获取权限码
+    let permissionCode = null;
+    if (userId) {
+      permissionCode = await getBasePermissionCode(id, userId);
+    }
+    
     res.status(200).json({ code: 200, message: "查询成功", data: knowledgeBases, permissionCode: permissionCode });
   } catch (err) {
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });
@@ -31,7 +47,7 @@ knowledgeBaseRouter.get('/getKnowledgeBase', async (req, res) => {
 knowledgeBaseRouter.get('/getKnowledgeBases', async (req, res) => {
   try {
     const { userId } = req.query;
-    const knowledgeBases = await getKnowledgeBaseByUserId(userId);
+    const knowledgeBases = await getKnowledgeBasesByUserId(userId);
     res.status(200).json({ code: 200, message: "查询成功", data: knowledgeBases });
   } catch (err) {
     console.log(err);
@@ -44,7 +60,10 @@ knowledgeBaseRouter.put('/updateBase/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { baseName, baseDesc, valid } = req.body;
-    const result = await updateKnowledgeBase(id, baseName, baseDesc, valid);
+    const result = await updateKnowledgeBase(id, {
+      name: baseName,
+      description: baseDesc
+    });
     if (result.matchedCount === 0) return res.status(404).json({ code: 404, message: "知识库未找到" });
     res.status(200).json({ code: 200, message: "知识库更新成功" });
   } catch (error) {

@@ -1,6 +1,7 @@
 import express from 'express';
 import { addUser, getUser, updateUser, deleteUser, getStrangerByName, getFriends, 
-  getApplyFriends, addFriend, handleApplyFriend, deleteFriend } from '../service/user.js';
+  getApplyFriends, addFriend, handleApplyFriend, deleteFriend, 
+  refuseApplyFriend} from '../service/user.js';
 
 const userRouter = express.Router();
 
@@ -116,7 +117,7 @@ userRouter.post('/addFriend', async (req, res) => {
   }
 });
 
-// 处理好友申请
+// 同意好友申请
 userRouter.put('/handleApplyFriend', async (req, res) => {
   try {
     const { userId, friendId } = req.query;
@@ -124,7 +125,21 @@ userRouter.put('/handleApplyFriend', async (req, res) => {
     if (result.result1.matchedCount === 0 || result.result2.matchedCount === 0) {
       return res.status(404).json({ code: 404, message: "用户未找到" });
     }
-    res.status(200).json({ code: 200, message: "处理好友申请成功" });
+    res.status(200).json({ code: 200, message: "同意好友申请成功" });
+  } catch (err) {
+    res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });
+  }
+});
+
+// 拒绝好友申请
+userRouter.put('/refuseApplyFriend', async (req, res) => {
+  try {
+    const { userId, friendId } = req.query;
+    const result = await refuseApplyFriend(userId, friendId);
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ code: 404, message: "用户未找到" });
+    }
+    res.status(200).json({ code: 200, message: "拒绝好友申请成功" });
   } catch (err) {
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });
   }

@@ -3,8 +3,13 @@ import { ObjectId } from 'mongodb';
 
 const { db } = await connectToDatabase();
 
-// 增添/授予好友文档权限，permission: 0为管理   1为可写   2为可读
+// 修改/授予好友文档权限，permission: 1为管理   2为可写   3为可读
 export async function addFriendDocPermission(userId, docId, permissionCode) {
+  // 先判断是否已经有权限，如果有则直接更新
+  const permission = await db.collection('docPermissions').findOne({ userId: new ObjectId(userId), docId: new ObjectId(docId) });
+  if (permission) {
+    return updateFriendDocPermission({ friendId: userId, docId, permissionCode });
+  }
   const result = await db.collection('docPermissions').insertOne(
     {  docId: new ObjectId(docId), userId: new ObjectId(userId), permissionCode: permissionCode }
   );
@@ -35,8 +40,12 @@ export async function getDocPermissions(docId) {
 }
 
 // 知识库权限相关
-// 增添/授予好友知识库权限，permission: 1为管理   2为可写   3为可读
+// 修改/授予好友知识库权限，permission: 1为管理   2为可写   3为可读
 export async function addFriendBasePermission(userId, baseId, permissionCode) {
+  const permission = await db.collection('basePermissions').findOne({ userId: new ObjectId(userId), baseId: new ObjectId(baseId) });
+  if (permission) {
+    return updateFriendBasePermission({ friendId: userId, baseId, newPermissionCode: permissionCode });
+  }
   const result = await db.collection('basePermissions').insertOne(
     { baseId: new ObjectId(baseId), userId: new ObjectId(userId), permissionCode: permissionCode }
   );
@@ -71,6 +80,10 @@ export async function getKnowledgePermissions(baseId) {
 // 获取知识库权限码
 export async function getBasePermissionCode(baseId, userId) {
   const base = await db.collection('knowledgeBases').findOne({ _id: new ObjectId(baseId) });
+  console.log(baseId);
+  
+  console.log(base);
+  
   if (base.ownerId === new ObjectId(userId)) {
     return 0;
   }

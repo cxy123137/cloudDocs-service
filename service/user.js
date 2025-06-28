@@ -117,34 +117,40 @@ export async function addFriend(userId, friendId) {
   return result;
 }
 
-// 处理好友申请
+// 用户同意好友申请
 export async function handleApplyFriend(userId, friendId) {
-  // 加到我的朋友列表里
+  // 把申请人加到我的朋友列表里，从我的申请列表移除
   const updateMyFriends = {
     $addToSet: {
       friends: new ObjectId(friendId),
     },
+    $pull: {
+      applyfriends: new ObjectId(friendId),
+    }
   };
-  // 从被申请人的申请列表移除，且加入他的朋友列表
+  // 将我加入他的朋友列表
   const updateStrangerFriends = {
     $addToSet: {
       friends: new ObjectId(userId),
-    },
-    $pull: {
-      applyfriends: new ObjectId(userId),
-    },
+    }
   };
-
-  if (handleType === 'accept') {
-    updateFields.$addToSet = {
-      friends: new ObjectId(friendId),
-    };
-  }
 
   const result1 = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, updateMyFriends);
   const result2 = await db.collection('users').updateOne({ _id: new ObjectId(friendId), valid: 1 }, updateStrangerFriends);
 
   return { result1, result2 };
+}
+
+// 拒绝好友申请
+export async function refuseApplyFriend(userId, friendId) {
+  // 将申请人从我的申请列表移除
+  const updateField = {
+    $pull: {
+      applyfriends: new ObjectId(friendId),
+    }
+  };
+  const result = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, updateField);
+  return result;
 }
 
 // 删除好友
@@ -155,7 +161,7 @@ export async function deleteFriend(userId, friendId) {
     },
   };
   const result1 = await db.collection('users').updateOne({ _id: new ObjectId(userId), valid: 1 }, myUpdate);
-  
+
   const friendUpdate = {
     $pull: {
       friends: new ObjectId(userId),

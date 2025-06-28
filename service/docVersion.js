@@ -1,5 +1,6 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
+import { updateDocument } from './doc.js';
 
 // 连接到数据库
 const { db } = await connectToDatabase();

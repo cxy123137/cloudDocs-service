@@ -10,16 +10,17 @@ export async function addDocVersion({ docId, title, baseId, ownerId, content, va
   // 根据文档ID查询文档（获取版本号）
   const doc = await db.collection('docs').findOne({ _id: new ObjectId(docId), valid: 1 });
   // 保存一次文档，并且更新文档版本号
-  updateDocument({ id: docId, title, baseId, ownerId, content, version: doc.version + 1, valid });
+  await updateDocument({ id: docId, title, baseId, ownerId, content, version: doc.version + 1, valid });
   if (!doc) {
     throw new Error('文档不存在或已删除');
   }
+  const newDoc = await db.collection('docs').findOne({ _id: new ObjectId(docId), valid: 1 });
   const newVersion = {
     _id: new ObjectId(),
-    rootDocId: doc._id,
-    version: doc.version + 1,
-    content: doc.content,
-    ownerId: doc.ownerId,
+    rootDocId: newDoc._id,
+    version: newDoc.version,
+    content: newDoc.content,
+    ownerId: newDoc.ownerId,
     createTime: new Date(),
   };
   const result = await db.collection('docVersions').insertOne(newVersion);

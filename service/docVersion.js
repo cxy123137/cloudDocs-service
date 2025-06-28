@@ -17,6 +17,7 @@ export async function addDocVersion({ docId }) {
     rootDocId: doc._id,
     version: doc.version + 1,
     content: doc.content,
+    ownerId: doc.ownerId,
     createTime: new Date(),
   };
   // 更新文档版本号

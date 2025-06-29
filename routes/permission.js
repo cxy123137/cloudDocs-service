@@ -37,10 +37,6 @@ permissionRouter.delete('/deleteFriendDocPermission', async (req, res) => {
 permissionRouter.put('/updateFriendDocPermission', async (req, res) => {
     const { friendId, docId, newPermissionCode } = req.query;
     try {
-        const permissionCode = await getDocPermissionCode(docId, friendId);
-        if (permissionCode === '0') {
-            res.status(400).json({code: 400, message: '无法编辑文档持有者权限'});
-        } 
         const result = await updateFriendDocPermission({ friendId, docId, newPermissionCode });
         res.status(200).json({code: 200, message: '修改文档内用户权限成功', data: result.matchedCount});
     } catch (err) {

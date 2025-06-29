@@ -3,15 +3,13 @@ import { ObjectId } from 'mongodb';
 
 const { db } = await connectToDatabase();
 
-// 修改/授予好友文档权限，permission: 1为管理   2为可写   3为可读
+// 授予好友文档权限，permission: 1为管理   2为可写   3为可读
 export async function addFriendDocPermission(userId, docId, permissionCode) {
   // 先判断是否已经有权限，如果有则直接更新
   const permission = await db.collection('docPermissions').findOne({ userId: new ObjectId(userId), docId: new ObjectId(docId) });
   if (permission) {
     return updateFriendDocPermission({ friendId: userId, docId, permissionCode });
   }
-  console.log("传入的docId：", docId);
-  console.log("处理的的docId：", new ObjectId(docId));
 
   
   const result = await db.collection('docPermissions').insertOne(
@@ -29,10 +27,10 @@ export async function deleteFriendDocPermission(friendId, docId) {
 }
 
 // 修改好友文档权限
-export async function updateFriendDocPermission({ friendId, docId, permissionCode }) {
+export async function updateFriendDocPermission({ friendId, docId, newPermissionCode }) {
   const result = await db.collection('docPermissions').updateOne(
     { userId: new ObjectId(friendId), docId: new ObjectId(docId) },
-    { $set: { permissionCode: permissionCode } }
+    { $set: { permissionCode: newPermissionCode } }
   );
   return result;
 }
@@ -47,11 +45,11 @@ export async function getDocPermissions(docId) {
     { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
     {
       // 转成对象，提取字段nickName
-        $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true }
+        $unwind: { path: "$user", preserveNullAndEmptyArrays: true }
     },
     { $addFields: {
-        "nikeName": "$user.nikeName",
-        }
+        "nickName": "$user.nickName"
+      }
     },
     { $project: { user: 0 } },
     { $sort: { permissionCode: 1 } }
@@ -115,9 +113,10 @@ export async function getKnowledgePermissions(baseId) {
 // 获取知识库权限码
 export async function getBasePermissionCode(baseId, userId) {
   const base = await db.collection('knowledgeBases').findOne({ _id: new ObjectId(baseId) });
-  console.log(baseId);
-  
-  console.log(base);
+
+  console.log("数据库的主人", base.ownerId);
+  console.log("用户", userId);
+
   
   if (base.ownerId === new ObjectId(userId)) {
     return 0;
@@ -129,7 +128,9 @@ export async function getBasePermissionCode(baseId, userId) {
 // 获取文档权限码
 export async function getDocPermissionCode(docId, userId) {
   // 先获取用户对文档所属知识库的权限
-  const baseId = await db.collection('docs').findOne({ _id: new ObjectId(docId) }).baseId;
+  const base = await db.collection('docs').findOne({ _id: new ObjectId(docId) });
+  const baseId = base.baseId;
+  
   let permissionCode = getBasePermissionCode(baseId, userId);
   if (permissionCode === '0') {
     return 0;

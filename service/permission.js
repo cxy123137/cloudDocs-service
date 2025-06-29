@@ -110,16 +110,13 @@ export async function getKnowledgePermissions(baseId) {
 
 // 获取知识库权限码
 export async function getBasePermissionCode(baseId, userId) {
-  console.log(baseId);
-  
   const base = await db.collection('knowledgeBases').findOne({ _id: new ObjectId(baseId) });
-  console.log('11111', base);
-  
   
   if (base.ownerId.equals(new ObjectId(userId))) {
     return 0;
   }
   const result = await db.collection('basePermissions').findOne({ baseId: new ObjectId(baseId), userId: new ObjectId(userId) });
+  if (result == null) return null;
   return result.permissionCode;
 }
 

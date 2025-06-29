@@ -10,6 +10,10 @@ export async function addFriendDocPermission(userId, docId, permissionCode) {
   if (permission) {
     return updateFriendDocPermission({ friendId: userId, docId, permissionCode });
   }
+  console.log("传入的docId：", docId);
+  console.log("处理的的docId：", new ObjectId(docId));
+
+  
   const result = await db.collection('docPermissions').insertOne(
     {  docId: new ObjectId(docId), userId: new ObjectId(userId), permissionCode: permissionCode }
   );
@@ -36,6 +40,8 @@ export async function updateFriendDocPermission({ friendId, docId, permissionCod
 // 获取文档的权限用户列表
 export async function getDocPermissions(docId) {
   // 获取权限用户列表，并且连表查询用户表的用户nickName
+  console.log(docId);
+  
   const result = await db.collection('docPermissions').aggregate([
     { $match: { docId: new ObjectId(docId) } },
     { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
@@ -50,6 +56,7 @@ export async function getDocPermissions(docId) {
     { $project: { user: 0 } },
     { $sort: { permissionCode: 1 } }
   ]).toArray();
+  console.log(result);
   return result;
 }
 
@@ -136,7 +143,3 @@ export async function getDocPermissionCode(docId, userId) {
   const result = await db.collection('docPermissions').findOne({ docId: new ObjectId(docId), userId: new  ObjectId(userId) });
   return result.permissionCode < permissionCode ? result.permissionCode : permissionCode;
 }
-
-
-
-

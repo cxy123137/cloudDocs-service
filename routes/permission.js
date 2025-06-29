@@ -94,10 +94,10 @@ permissionRouter.delete('/deleteFriendBasePermission', async (req, res) => {
 permissionRouter.put('/updateFriendBasePermission', async (req, res) => {
     const { friendId, baseId, newPermissionCode } = req.query;
     try {
-        const permissionCode = await getBasePermissionCode(baseId, friendId);
-        if (permissionCode === '0') {
-            res.status(400).json({code: 400, message: '无法编辑知识库持有者权限'});
-        } 
+        // const permissionCode = await getBasePermissionCode(baseId, friendId);
+        // if (permissionCode === '0') {
+        //     res.status(400).json({code: 400, message: '无法编辑知识库持有者权限'});
+        // } 
         const result = await updateFriendBasePermission({ friendId, baseId, newPermissionCode });
         res.status(200).json({code: 200, message: '修改知识库内用户权限成功', data: result.matchedCount});
     } catch (err) {

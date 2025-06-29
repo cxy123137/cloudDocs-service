@@ -35,7 +35,21 @@ export async function updateFriendDocPermission({ friendId, docId, permissionCod
 
 // 获取文档的权限用户列表
 export async function getDocPermissions(docId) {
-  const result = await db.collection('docPermissions').find({ docId: new ObjectId(docId) }).sort({ permissionCode: 1 }).toArray();
+  // 获取权限用户列表，并且连表查询用户表的用户nickName
+  const result = await db.collection('docPermissions').aggregate([
+    { $match: { docId: new ObjectId(docId) } },
+    { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+    {
+      // 转成对象，提取字段nickName
+        $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true }
+    },
+    { $addFields: {
+        "nikeName": "$user.nikeName",
+        }
+    },
+    { $project: { user: 0 } },
+    { $sort: { permissionCode: 1 } }
+  ]).toArray();
   return result;
 }
 
@@ -71,7 +85,21 @@ export async function updateFriendBasePermission({ friendId, baseId, newPermissi
 
 // 获取知识库的权限用户列表
 export async function getKnowledgePermissions(baseId) {
-  const result = await db.collection('basePermissions').find({ baseId: new ObjectId(baseId) }).sort({ permissionCode: 1 }).toArray();
+  // 获取权限用户列表，并且连表查询用户表的用户nickName
+  const result = await db.collection('basePermissions').aggregate([
+    { $match: { baseId: new ObjectId(baseId) } },
+    { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+    {
+      // 转成对象，提取字段nickName
+        $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true }
+    },
+    { $addFields: {
+        "nikeName": "$user.nikeName",
+        }
+    },
+    { $project: { user: 0 } },
+    { $sort: { permissionCode: 1 } }
+  ]).toArray();
   return result;
 }
 

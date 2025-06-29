@@ -52,7 +52,7 @@ permissionRouter.put('/updateFriendDocPermission', async (req, res) => {
 permissionRouter.get('/getDocPermissions', async (req, res) => {
     const { docId, permissionCode } = req.query;
     try {
-        if (permissionCode !== '0' || permissionCode !== '1') {
+        if (permissionCode !== '0' && permissionCode !== '1') {
             res.status(402).json({code: 402, message: '用户管理权限不足'});
         }
         const result = await getDocPermissions(docId);

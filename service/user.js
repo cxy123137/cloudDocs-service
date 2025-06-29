@@ -77,7 +77,13 @@ export async function deleteUser(id) {
 
 // 查询陌生人（根据陌生人的username）（用户id需要传入判断不是好友）
 export async function getStrangerByName(username, userId) {
-  const user = await db.collection('users').findOne({ valid: 1, userId });
+  const user = await db.collection('users').findOne({ valid: 1, _id: new ObjectId(userId) });
+  console.log(userId);
+  
+  console.log(user);
+  console.log(user.friends);
+  
+  
   const stranger = await db.collection('users').findOne({ valid: 1, _id: { $nin: user.friends }, username });
   
   return stranger;

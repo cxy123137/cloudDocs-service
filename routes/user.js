@@ -72,9 +72,6 @@ userRouter.get('/getStrangerByName', async (req, res) => {
   try {
     const { username, userId } = req.query;
     const stranger = await getStrangerByName(username, userId);
-    if (!stranger) {
-      return res.status(404).json({ code: 404, message: "陌生人未找到或已是您的好友" });
-    }
     res.status(200).json({ code: 200, message: "查询成功", data: stranger });
   } catch (err) {
     res.status(500).json({ code: 500, message: "服务器错误，请稍后再试", error: err.message });
@@ -150,6 +147,8 @@ userRouter.delete('/deleteFriend', async (req, res) => {
   try {
     const { userId, friendId } = req.query;
     const result = await deleteFriend(userId, friendId);
+    console.log(result.result1.matchedCount, result.result2.matchedCount);
+    
     if (result.result1.matchedCount === 0 || result.result2.matchedCount === 0) {
       return res.status(404).json({ code: 404, message: "用户未找到" });
     }

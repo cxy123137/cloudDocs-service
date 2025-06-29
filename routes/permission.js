@@ -53,7 +53,7 @@ permissionRouter.get('/getDocPermissions', async (req, res) => {
     const { docId, permissionCode } = req.query;
     try {
         if (permissionCode !== '0' || permissionCode !== '1') {
-            res.status(400).json({code: 400, message: '用户管理权限不足'});
+            res.status(402).json({code: 402, message: '用户管理权限不足'});
         }
         const result = await getDocPermissions(docId);
         res.status(200).json({code: 200, message: '获取文档权限列表成功', data: result});

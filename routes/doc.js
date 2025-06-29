@@ -30,9 +30,9 @@ documentsRouter.get('/getDoc', async (req, res) => {
   try {
     const { userId, docId } = req.query;
     const doc = await getDocument({ docId, userId });
-    // const permissionCode = await getDocPermissionCode(docId, userId);
-    // res.status(200).json({ code: 200, message: '查询成功', data: doc, permissionCode: permissionCode });
-    res.status(200).json({ code: 200, message: '查询成功', data: doc });
+    const permissionCode = await getDocPermissionCode(docId, userId);
+    res.status(200).json({ code: 200, message: '查询成功', data: doc, permissionCode: permissionCode });
+    // res.status(200).json({ code: 200, message: '查询成功', data: doc });
 
   } catch (error) {
     console.log(error);

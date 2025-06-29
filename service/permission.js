@@ -113,12 +113,8 @@ export async function getKnowledgePermissions(baseId) {
 // 获取知识库权限码
 export async function getBasePermissionCode(baseId, userId) {
   const base = await db.collection('knowledgeBases').findOne({ _id: new ObjectId(baseId) });
-
-  console.log("数据库的主人", base.ownerId);
-  console.log("用户", userId);
-
   
-  if (base.ownerId === new ObjectId(userId)) {
+  if (base.ownerId.equals(new ObjectId(userId))) {
     return 0;
   }
   const result = await db.collection('basePermissions').findOne({ baseId: new ObjectId(baseId), userId: new ObjectId(userId) });
@@ -138,7 +134,7 @@ export async function getDocPermissionCode(docId, userId) {
 
   // 不是最高权限，继续判断比较
   const doc = await db.collection('docs').findOne({ _id: new ObjectId(docId) });
-  if (doc.ownerId === new ObjectId(userId)) {
+  if (doc.ownerId.equals(new ObjectId(userId))) {
     return 0;
   }
   const result = await db.collection('docPermissions').findOne({ docId: new ObjectId(docId), userId: new  ObjectId(userId) });

@@ -23,7 +23,6 @@ knowledgeBaseRouter.get('/getKnowledgeBase', async (req, res) => {
     // console.log("知识库id:", id);
     
     const permissionCode = await getBasePermissionCode(id, userId);
-    log("权限码", permissionCode);
     res.status(200).json({ code: 200, message: "查询成功", data: knowledgeBases, permissionCode: permissionCode });
     // res.status(200).json({ code: 200, message: "查询成功", data: knowledgeBases });
 

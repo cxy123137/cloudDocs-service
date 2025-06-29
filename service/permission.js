@@ -38,7 +38,6 @@ export async function updateFriendDocPermission({ friendId, docId, newPermission
 // 获取文档的权限用户列表
 export async function getDocPermissions(docId) {
   // 获取权限用户列表，并且连表查询用户表的用户nickName
-  console.log(docId);
   
   const result = await db.collection('docPermissions').aggregate([
     { $match: { docId: new ObjectId(docId) } },
@@ -54,7 +53,6 @@ export async function getDocPermissions(docId) {
     { $project: { user: 0 } },
     { $sort: { permissionCode: 1 } }
   ]).toArray();
-  console.log(result);
   return result;
 }
 
@@ -112,7 +110,11 @@ export async function getKnowledgePermissions(baseId) {
 
 // 获取知识库权限码
 export async function getBasePermissionCode(baseId, userId) {
+  console.log(baseId);
+  
   const base = await db.collection('knowledgeBases').findOne({ _id: new ObjectId(baseId) });
+  console.log('11111', base);
+  
   
   if (base.ownerId.equals(new ObjectId(userId))) {
     return 0;
@@ -124,9 +126,10 @@ export async function getBasePermissionCode(baseId, userId) {
 // 获取文档权限码
 export async function getDocPermissionCode(docId, userId) {
   // 先获取用户对文档所属知识库的权限
-  const base = await db.collection('docs').findOne({ _id: new ObjectId(docId) });
-  const baseId = base.baseId;
+  const doc1 = await db.collection('docs').findOne({ _id: new ObjectId(docId) });
+  const baseId = doc1.baseId;
   
+
   let permissionCode = getBasePermissionCode(baseId, userId);
   if (permissionCode === '0') {
     return 0;
@@ -134,6 +137,7 @@ export async function getDocPermissionCode(docId, userId) {
 
   // 不是最高权限，继续判断比较
   const doc = await db.collection('docs').findOne({ _id: new ObjectId(docId) });
+  
   if (doc.ownerId.equals(new ObjectId(userId))) {
     return 0;
   }

@@ -21,7 +21,7 @@ export async function addDocument({title = "未命名文档", baseId, ownerId, c
     _id: new ObjectId(),
     title,
     baseId: new ObjectId(baseId),
-    ownerId,
+    ownerId: new ObjectId(ownerId),
     content,
     version: 0,
     valid,

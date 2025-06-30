@@ -36,9 +36,7 @@ documentsRouter.get('/getDoc', async (req, res) => {
     const { userId, docId } = req.query;
     const doc = await getDocument({ docId, userId });
     const permissionCode = await getDocPermissionCode(docId, userId);
-    console.log(1111);
-    
-    console.log(permissionCode, "权限码");
+    // const permissionCode = '0';    
     
     res.status(200).json({ code: 200, message: '查询成功', data: doc, permissionCode: permissionCode });
     // res.status(200).json({ code: 200, message: '查询成功', data: doc });
@@ -80,6 +78,7 @@ documentsRouter.get('/getSharedDocs', async (req, res) => {
   try {
     const userId = req.query.userId;
     const docs = await getDocsByPermission(userId);
+    // const docs = await getDocumentByBaseId({ baseId: "6861537d52017b4e65a8f87d" });
     res.status(200).json({ code: 200, message: '查询成功', data: docs });
   } catch (err) {
     console.log(err);

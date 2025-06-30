@@ -48,10 +48,13 @@ permissionRouter.put('/updateFriendDocPermission', async (req, res) => {
 
 // 获取文档权限用户列表
 permissionRouter.get('/getDocPermissions', async (req, res) => {
-    const { docId, permissionCode } = req.query;
+    const { docId, userId } = req.query;
     try {
-        if (permissionCode !== '0' && permissionCode !== '1') {
-            res.status(302).json({code: 302, message: '用户管理权限不足'});
+        // 根据userId查询docPermissions表，获取该用户对该文档的权限
+        const permissionCode = await getDocPermissionCode(docId, userId);
+        
+        if (permissionCode != '0' && permissionCode != '1') {
+            res.status(402).json({code: 402, message: '用户管理权限不足'});
         }
         const result = await getDocPermissions(docId);
         res.status(200).json({code: 200, message: '获取文档权限列表成功', data: result});

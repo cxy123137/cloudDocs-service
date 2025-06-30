@@ -22,7 +22,7 @@ loginRouter.post('/login', async (req, res) => {
     }
     
     if (password !== user.password) {
-      return res.status(401).json({ error: '密码错误' });
+      return res.status(405).json({ error: '密码错误' });
     }
     
     // 获取默认数据库id

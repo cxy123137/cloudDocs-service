@@ -240,36 +240,6 @@ export async function checkAndUpdateSummary(docId) {
   }
 }
 
-// 批量检查所有文档的摘要
-export async function checkAllDocumentsSummary() {
-  try {
-    console.log('开始检查所有文档摘要...');
-    
-    // 获取所有有效文档
-    const docs = await db.collection('docs').find({ valid: 1 }).toArray();
-    
-    console.log(`找到 ${docs.length} 个文档需要检查`);
-    
-    // 并发处理，但限制并发数量避免API限制
-    const batchSize = 5;
-    for (let i = 0; i < docs.length; i += batchSize) {
-      const batch = docs.slice(i, i + batchSize);
-      await Promise.all(
-        batch.map(doc => checkAndUpdateSummary(doc._id.toString()))
-      );
-      
-      // 添加延迟避免API限制
-      if (i + batchSize < docs.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-    }
-    
-    console.log('所有文档摘要检查完成');
-  } catch (error) {
-    console.error('批量检查摘要失败:', error);
-  }
-}
-
 // 删除文档摘要
 export async function deleteSummary(docId) {
   try {

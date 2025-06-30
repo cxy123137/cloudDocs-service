@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateSummary, getSummary, checkAndUpdateSummary, checkAllDocumentsSummary, deleteSummary } from '../service/summary.js';
+import { generateSummary, getSummary, checkAndUpdateSummary, deleteSummary } from '../service/summary.js';
 import { getDocument } from '../service/doc.js';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../db.js';
@@ -70,7 +70,17 @@ summaryRouter.post('/generate', async (req, res) => {
       return res.status(400).json({ code: 400, message: '缺少必要参数: docId' });
     }
     
-    const summary = await generateSummary(docId, userId);
+    // 先获取文档内容
+    const doc = await db.collection('docs').findOne({
+      _id: safeObjectId(docId),
+      valid: 1
+    });
+    
+    if (!doc) {
+      return res.status(404).json({ code: 404, message: '文档不存在或已删除' });
+    }
+    
+    const summary = await generateSummary(docId, doc.content);
     res.status(200).json({ code: 200, message: '摘要生成成功', data: summary });
   } catch (error) {
     console.error('生成摘要失败:', error);
@@ -98,28 +108,6 @@ summaryRouter.post('/checkAndUpdateSummary', async (req, res) => {
     });
   } catch (error) {
     console.error('检查摘要失败:', error);
-    res.status(500).json({ 
-      code: 500, 
-      message: '服务器错误，请稍后再试', 
-      error: error.message 
-    });
-  }
-});
-
-// 批量检查所有文档摘要（管理员功能）
-summaryRouter.post('/checkAllSummaries', async (req, res) => {
-  try {
-    // 异步执行，避免请求超时
-    checkAllDocumentsSummary().catch(error => {
-      console.error('批量检查摘要失败:', error);
-    });
-    
-    res.status(200).json({ 
-      code: 200, 
-      message: '批量检查摘要任务已启动，请查看服务器日志了解进度' 
-    });
-  } catch (error) {
-    console.error('启动批量检查失败:', error);
     res.status(500).json({ 
       code: 500, 
       message: '服务器错误，请稍后再试', 

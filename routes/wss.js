@@ -40,7 +40,7 @@ export async function setupWSServer() {
         // 广播更新到所有连接的客户端
         for (const client of clients) {
           client.send(message);
-          // console.log('广播更新成功:', message);
+          console.log('广播更新成功:', message);
         }
       }
     });

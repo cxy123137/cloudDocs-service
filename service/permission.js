@@ -4,16 +4,18 @@ import { ObjectId } from 'mongodb';
 const { db } = await connectToDatabase();
 
 // 授予好友文档权限，permission: 1为管理   2为可写   3为可读
-export async function addFriendDocPermission(userId, docId, permissionCode) {
+export async function addFriendDocPermission(userId, docId, newPermissionCode) {
   // 先判断是否已经有权限，如果有则直接更新
   const permission = await db.collection('docPermissions').findOne({ userId: new ObjectId(userId), docId: new ObjectId(docId) });
   if (permission) {
-    return updateFriendDocPermission({ friendId: userId, docId, permissionCode });
+    return updateFriendDocPermission({ friendId: userId, docId, newPermissionCode });
   }
 
   
+  console.log(newPermissionCode, "传入的权限码1");
+  
   const result = await db.collection('docPermissions').insertOne(
-    {  docId: new ObjectId(docId), userId: new ObjectId(userId), permissionCode: permissionCode }
+    {  docId: new ObjectId(docId), userId: new ObjectId(userId), permissionCode: newPermissionCode }
   );
   return result;
 }

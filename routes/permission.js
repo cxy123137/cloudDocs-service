@@ -8,9 +8,11 @@ const permissionRouter = express.Router();
 // 增添/授予好友文档权限，permission: 1为管理   2为可写   3为可读
 // 授予不需要校验权限，因为能进入权限列表点开就说明是0/1的权限了
 permissionRouter.post('/addFriendDocPermission', async (req, res) => {
-    const { friendId, docId, permissionCode } = req.query;
+    const { friendId, docId, newPermissionCode } = req.query;
     try {
-        const result = await addFriendDocPermission(friendId, docId, permissionCode);
+        console.log(newPermissionCode, "传入的权限码");
+        
+        const result = await addFriendDocPermission(friendId, docId, newPermissionCode);
         res.status(200).json({code: 200, message: '添加好友文档权限成功', data: result.insertedId});
     } catch (err) {
         res.status(500).json({ code: 500, message: '服务器错误', error: err.message });
@@ -46,9 +48,12 @@ permissionRouter.put('/updateFriendDocPermission', async (req, res) => {
 
 // 获取文档权限用户列表
 permissionRouter.get('/getDocPermissions', async (req, res) => {
-    const { docId, permissionCode } = req.query;
+    const { docId, userId } = req.query;
     try {
-        if (permissionCode !== '0' && permissionCode !== '1') {
+        // 根据userId查询docPermissions表，获取该用户对该文档的权限
+        const permissionCode = await getDocPermissionCode(docId, userId);
+        
+        if (permissionCode != '0' && permissionCode != '1') {
             res.status(402).json({code: 402, message: '用户管理权限不足'});
         }
         const result = await getDocPermissions(docId);

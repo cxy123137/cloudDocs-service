@@ -17,11 +17,12 @@ export async function setupWSServer() {
     // 获取文档id后续作为roomName
     const docId = parts[3].toString().split('?')[0];
 
-    // 根据文档（房间）获取/创建连接列表
+    // 根据（房间）获取/创建连接列表
     let clients = clientsMap.get(docId);
     if (!clients) {
-      // 连接唯一
+      // 房间唯一
       clients = new Set();
+      // 连接唯一
       clientsMap.set(docId, clients);
     }
 
@@ -40,7 +41,7 @@ export async function setupWSServer() {
         // 广播更新到所有连接的客户端
         for (const client of clients) {
           client.send(message);
-          console.log('广播更新成功:', message);
+          console.log('房间号：', docId, '连接号', conn.id);
         }
       }
     });

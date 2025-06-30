@@ -2,8 +2,13 @@ import express from 'express';
 import { addDocument, getDocument, getDocumentByBaseId, updateDocument, 
   deleteDocument, getDocumentByRecentlyUserId, getDocsByPermission } from '../service/doc.js';
 import { getDocPermissionCode } from '../service/permission.js';
+import summary from '../service/ai.js';
 
 const documentsRouter = express.Router();
+
+documentsRouter.get('/ai', async (req, res) => { 
+  console.log(summary);
+})
 
 // 新建文档
 documentsRouter.post('/addDoc', async (req, res) => {
@@ -31,6 +36,8 @@ documentsRouter.get('/getDoc', async (req, res) => {
     const { userId, docId } = req.query;
     const doc = await getDocument({ docId, userId });
     const permissionCode = await getDocPermissionCode(docId, userId);
+    // const permissionCode = '0';    
+    
     res.status(200).json({ code: 200, message: '查询成功', data: doc, permissionCode: permissionCode });
     // res.status(200).json({ code: 200, message: '查询成功', data: doc });
 
@@ -71,6 +78,7 @@ documentsRouter.get('/getSharedDocs', async (req, res) => {
   try {
     const userId = req.query.userId;
     const docs = await getDocsByPermission(userId);
+    // const docs = await getDocumentByBaseId({ baseId: "6861537d52017b4e65a8f87d" });
     res.status(200).json({ code: 200, message: '查询成功', data: docs });
   } catch (err) {
     console.log(err);

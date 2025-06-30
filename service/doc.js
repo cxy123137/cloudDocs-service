@@ -161,6 +161,7 @@ export async function getDocumentByBaseId({ baseId }) {
 export async function getDocsByPermission(userId) {
   const permissions = await db.collection('docPermissions').find({ userId: new ObjectId(userId) }).toArray();
   const docs = await db.collection('docs').find({ _id: { $in: permissions.map(item => item.docId) }}).toArray();
+  
   return docs;
 }
 

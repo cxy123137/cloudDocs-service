@@ -17,7 +17,12 @@ app.use(cors({
 }));
 
 // 请求json处理拦截器
-app.use(express.json());
+app.use(express.json({ limit: '20mb' })); // 增加到10MB
+// // 配置传输最大值
+// app.use(express.raw({
+//   type: 'application/octet-stream',
+//   limit: '5mb' // 根据需求调整大小
+// }));
 
 // 全局拦截请求，必须登录
 app.use((req, res, next) => {

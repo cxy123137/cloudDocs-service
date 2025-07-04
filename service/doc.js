@@ -146,7 +146,7 @@ export async function getDocumentByRecentlyUserId({ userId }) {
           "baseInfo": 0
         }
       }
-    ]).toArray()
+    ]).sort({ "recentlyOpen.recentlyOpenTime": -1 }).toArray()
   );
 }
 
@@ -184,6 +184,9 @@ export async function updateDocument({ id, title, baseId, ownerId, content, vers
       delete documentData[key];
     }
   });
+
+  console.log('收到的二进制数据为：', content);
+  
 
   const result = await db.collection('docs').updateOne(
     { _id: new ObjectId(id), valid: 1 },

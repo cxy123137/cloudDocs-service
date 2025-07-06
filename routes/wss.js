@@ -41,7 +41,7 @@ export async function setupWSServer() {
         // 广播更新到所有连接的客户端
         for (const client of clients) {
           client.send(message);
-          console.log('房间号：', docId, '连接号', conn.id);
+          // console.log('房间号：', docId, '连接号', conn.id);
         }
       }
     });

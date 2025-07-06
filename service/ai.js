@@ -24,7 +24,7 @@ export async function generateSummary(text) {
 }
 
 // 调用示例
-const longText = "这是一段需要摘要的长文本，你好，欢迎使用摘要生成助手。我是一个阳光大男孩";
-const summary = generateSummary(longText).then(summary => console.log(summary));
+// const longText = "这是一段需要摘要的长文本，你好，欢迎使用摘要生成助手。我是一个阳光大男孩";
+// const summary = generateSummary(longText).then(summary => console.log(summary));
 
-export default summary;
+// export default summary;

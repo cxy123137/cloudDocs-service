@@ -1,5 +1,6 @@
 import { connectToDatabase } from '../db.js';
 import { ObjectId } from 'mongodb';
+import { saveMapping } from './comment.js';
 
 // 连接到数据库
 const { db } = await connectToDatabase();
@@ -30,6 +31,8 @@ export async function addDocument({title = "未命名文档", baseId, ownerId, c
     updateTime: new Date(),
   };
   const result = await db.collection('docs').insertOne(newDoc);
+  // 同时新建一个map映射
+  saveMapping({ docId: newDoc._id, map: JSON.stringify(Array.from(new Map())) });
   return result;
 }
 
@@ -185,7 +188,7 @@ export async function updateDocument({ id, title, baseId, ownerId, content, vers
     }
   });
 
-  console.log('收到的二进制数据为：', content);
+  // console.log('收到的二进制数据为：', content);
   
 
   const result = await db.collection('docs').updateOne(

@@ -2,7 +2,7 @@ import express from 'express';
 import { addDocument, getDocument, getDocumentByBaseId, updateDocument, 
   deleteDocument, getDocumentByRecentlyUserId, getDocsByPermission } from '../service/doc.js';
 import { getDocPermissionCode } from '../service/permission.js';
-import summary from '../service/ai.js';
+// import summary from '../service/ai.js';
 
 const documentsRouter = express.Router();
 

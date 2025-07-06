@@ -68,11 +68,26 @@ export async function deleteCommentsByDocId(docId) {
 // 保存映射表
 export async function saveMapping({ docId, map }) {
   // 查询文档是否有旧的映射数据
-  const oldMapping = await db.collection('CommentTextStyleMap').findOne({ docId: new ObjectId(docId) });
-  if (oldMapping) {
-    // 如果有，则更新映射数据
+  const prev = await db.collection('CommentTextStyleMap').findOne({ docId: new ObjectId(docId) });
+  if (prev) {
+    // 如果有，合并冲突，更新映射数据
+    const pervMap = new Map(JSON.parse(prev.map));
+    const newMap = new Map(JSON.parse(map));
+    newMap.forEach((value, key) => {
+        pervMap.set(key, value);
+    });
+
+    // 查询评论表获取评论id，map过滤掉不存在的评论
+    const comments = await db.collection('comments').find({ docId: new ObjectId(docId) }).toArray();
+    const commentIds = comments.map(comment => comment._id);
+    pervMap.forEach((value, key) => {
+      if (!commentIds.includes(key)) {
+        pervMap.delete(key);
+      }
+    });
+
     const result = await db.collection('CommentTextStyleMap').updateOne(
-      { _id: oldMapping._id },
+      { _id: prev._id },
       { $set: {docId: new ObjectId(docId), map, updateTime: new Date() } }
     );
     return result.modifiedCount;

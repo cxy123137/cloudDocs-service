@@ -56,6 +56,7 @@ commentRouter.delete('/deleteComment', async(req, res) => {
   try {
     const { commentId } = req.query;
     const result = await deleteComment(commentId);
+    broadcast('refreshCommentData');
     res.status(200).send({code: 200, message: '删除评论成功', data: result});
   } catch (error) {
     res.status(500).send({code: 500, message: '服务器错误'});

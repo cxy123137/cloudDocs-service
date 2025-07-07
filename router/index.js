@@ -7,6 +7,7 @@ import { docVersionsRouter } from '../routes/docVersion.js';
 import { permissionRouter } from '../routes/permission.js';
 import { summaryRouter } from '../routes/summary.js';
 import { commentRouter } from '../routes/comment.js';
+import { SSERouter } from '../routes/SSE.js'
 
 export default function (app) {
   app.use('/knowledgeBase', knowledgeBaseRouter);
@@ -17,4 +18,5 @@ export default function (app) {
   app.use('/permission', permissionRouter);
   app.use('/summary', summaryRouter);
   app.use('/comment', commentRouter);
+  app.use('/sse', SSERouter);
 }

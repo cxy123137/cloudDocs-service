@@ -1,6 +1,7 @@
 import express from 'express';
 import { addComment, getCommentsByDocId, getCommentById, updateComment, 
     deleteComment, deleteCommentsByDocId, saveMapping, getMappingByDocId } from '../service/comment.js';
+import { broadcast } from './SSE.js';
 
 const commentRouter = express.Router();
 
@@ -77,6 +78,7 @@ commentRouter.post('/saveMapping', async(req, res) => {
   try {
     const { docId, map } = req.body;
     const result = await saveMapping({ docId, map });
+    broadcast('refreshCommentData');
     res.status(200).send({code: 200, message: '保存评论样式映射成功', data: result});
   } catch (error) {
     res.status(500).send({code: 500, message: '服务器错误'});

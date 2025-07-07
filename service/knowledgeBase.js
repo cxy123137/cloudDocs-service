@@ -71,6 +71,13 @@ export async function updateKnowledgeBase(id, baseName, baseDesc, valid) {
 
 // 删除知识库：后续优化为假删
 export async function deleteKnowledgeBase(id) {
+  // 不能删除默认知识库
+  const knowledgeBase = await db.collection('knowledgeBases').findOne({ _id: new ObjectId(id), valid: 1 });
+  const userId = knowledgeBase.ownerId;
+  const defaultKnowledgeBaseId = await getDefaultKnowledgeBaseIdByUserId(userId);
+  if (id == defaultKnowledgeBaseId) return 402;
+  // 同时删除名下所有文档
+  await db.collection('docs').deleteMany({ baseId: new ObjectId(id) });
   const result = await db.collection('knowledgeBases').deleteOne({ _id: new ObjectId(id), valid: 1 });
   return result;
 }

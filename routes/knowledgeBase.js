@@ -61,6 +61,7 @@ knowledgeBaseRouter.delete('/deleteBase/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await deleteKnowledgeBase(id);
+    if (result == 402) return res.status(202).json({ code: 202, message: "默认知识库不可删除" });
     if (result.deletedCount === 0) return res.status(404).json({ code: 404, message: "知识库未找到" });
     res.status(200).json({ code: 200, message: "知识库删除成功" });
   } catch (err) {

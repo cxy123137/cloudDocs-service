@@ -39,13 +39,34 @@ export async function getDefaultKnowledgeBaseIdByUserId(userId) {
 // 改成，根据userId，查询用户名下的所有知识库，并查询所有有权限的知识库
 export async function getKnowledgeBaseByUserId(userId) {
   const permissions = await db.collection('permissions').find({ userId: new ObjectId(userId) }).toArray();
-  const knowledgeBases = await db.collection('knowledgeBases').find({
-    $or: [
-      { ownerId: new ObjectId(userId) },
-      { _id: { $in: permissions.map(permission => permission.baseId) } }
-    ],
-    valid: 1
-  }).toArray();
+  // const knowledgeBases = await db.collection('knowledgeBases').find({
+  //   $or: [
+  //     { ownerId: new ObjectId(userId) },
+  //     { _id: { $in: permissions.map(permission => permission.baseId) } }
+  //   ],
+  //   valid: 1
+  // }).toArray();
+  // 添加连表查询知识库下的文档数组字段
+  const knowledgeBases = await db.collection('knowledgeBases').aggregate([
+  {
+    $match: {
+      $or: [
+        { ownerId: new ObjectId(userId) },
+        { _id: { $in: permissions.map(permission => new ObjectId(permission.baseId)) } }
+      ],
+      valid: 1
+    }
+  },
+  {
+    $lookup: {
+      from: 'docs', // 连接的表名
+      localField: '_id', // 当前集合中用于匹配的字段
+      foreignField: 'baseId', // 外部集合中用于匹配的字段
+      as: 'docs' // 结果字段名
+    }
+  }
+  ]).toArray();
+
   return knowledgeBases;
 }
 
